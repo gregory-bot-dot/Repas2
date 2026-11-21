@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="fr">
 <head>
@@ -34,6 +33,16 @@ h1{font-size:28px;font-weight:800;margin:8px 0 14px;letter-spacing:-.02em}
 .btn.main{background:var(--acc);color:var(--accink);border-color:var(--acc)}
 .btn.warn{color:var(--warn)}
 .aisle{font-size:15px;font-weight:800;color:var(--mute);margin:16px 2px 8px}
+[hidden]{display:none!important}
+.idea{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.idea.on{border-color:var(--acc);border-width:2px}
+.ichk{display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+.ichk input{width:22px;height:22px;accent-color:var(--acc);flex:none;margin-top:2px}
+.ichk small{display:block;color:var(--mute);font-size:13px}
+.assign{display:flex;gap:8px;margin-top:10px}
+.assign select{flex:1;min-width:0;font:inherit;font-size:16px;font-family:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
+.addbar{position:sticky;bottom:12px;margin-top:12px}
+.addbar .btn{width:100%;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .note{color:var(--mute);padding:24px 8px;text-align:center}
 #sheet{position:fixed;inset:0;background:rgba(10,16,22,.55);display:none;align-items:flex-end;z-index:20}
 #sheet.open{display:flex}
@@ -54,6 +63,7 @@ textarea{min-height:130px;resize:vertical}
 <h1>Menu de la semaine</h1>
 <div class="tabs" role="tablist">
   <button role="tab" id="t-week" aria-selected="true">Repas</button>
+  <button role="tab" id="t-idea" aria-selected="false">Idées</button>
   <button role="tab" id="t-list" aria-selected="false">Courses</button>
 </div>
 <main id="view"></main>
@@ -63,12 +73,6 @@ textarea{min-height:130px;resize:vertical}
     <h3 id="sh-title"></h3>
     <label for="f-name">Repas</label>
     <input type="text" id="f-name" placeholder="Ex. : pâtes à la tomate" autocomplete="off">
-    <label for="f-idea">Idées de plats avec un ingrédient</label>
-    <div class="bar" style="margin:0">
-      <input type="text" id="f-idea" placeholder="Ex. : poulet, courgette, saumon" autocomplete="off">
-      <button type="button" class="btn" id="f-suggest" style="flex:0 0 auto">Proposer</button>
-    </div>
-    <div class="sug" id="f-results"></div>
     <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-search">Chercher sur Marmiton</button></div>
     <label for="f-ing">Ingrédients (un par ligne)</label>
     <textarea id="f-ing" placeholder="400 g de pâtes&#10;3 tomates&#10;1 oignon"></textarea>
@@ -185,10 +189,12 @@ var tt;function toast(t){var n=document.getElementById("toast");n.textContent=t;
 
 function render(){
   document.getElementById("t-week").setAttribute("aria-selected",tab==="week");
+  document.getElementById("t-idea").setAttribute("aria-selected",tab==="idea");
   document.getElementById("t-list").setAttribute("aria-selected",tab==="list");
-  if(tab==="week")renderWeek();else renderList();
+  if(tab==="week")renderWeek();else if(tab==="idea")renderIdeas();else renderList();
 }
 document.getElementById("t-week").addEventListener("click",function(){tab="week";render();});
+document.getElementById("t-idea").addEventListener("click",function(){tab="idea";render();});
 document.getElementById("t-list").addEventListener("click",function(){tab="list";render();});
 
 var sheet=document.getElementById("sheet");
@@ -230,47 +236,131 @@ function trList(list,from,to){
       }).catch(function(){return c;});
   })).then(function(parts){return [].concat.apply([],parts);});
 }
+var ideas={q:"",list:null,loading:false,sel:{}};
+var SLOTS=[["p","Matin"],["m","Midi"],["s","Soir"]];
+var LEVELS=["Faciles","Intermédiaires","Élaborées"];
+var rawCache={};
+function getMeal(id){
+  if(rawCache[id])return Promise.resolve(rawCache[id]);
+  return fetch(MEALDB+"lookup.php?i="+encodeURIComponent(id)).then(function(x){return x.json();}).then(function(d){
+    var m=(d.meals||[])[0]||null;if(m)rawCache[id]=m;return m;
+  });
+}
+function countIng(m){var n=0;for(var i=1;i<=20;i++)if((m["strIngredient"+i]||"").trim())n++;return n;}
+function levelOf(n){return n<=7?0:n<=12?1:2;}
 function api(p){
-  if(p.action==="suggest"){
-    return trList([p.q],"fr","en").then(function(r){
-      var en=r[0].toLowerCase().trim().replace(/\s+/g,"_");
-      return fetch(MEALDB+"filter.php?i="+encodeURIComponent(en)).then(function(x){return x.json();}).then(function(d){
-        var ms=(d.meals||[]).slice(0,8);
-        return trList(ms.map(function(m){return m.strMeal;}),"en","fr").then(function(n){
-          return {meals:ms.map(function(m,i){return {id:m.idMeal,name:n[i]};})};
-        });
-      });
-    });
-  }
-  return fetch(MEALDB+"lookup.php?i="+encodeURIComponent(p.id)).then(function(x){return x.json();}).then(function(d){
-    var m=(d.meals||[])[0];if(!m)return {};
+  return getMeal(p.id).then(function(m){
+    if(!m)return {};
     var lines=[];
     for(var i=1;i<=20;i++){var g=(m["strIngredient"+i]||"").trim(),q=(m["strMeasure"+i]||"").trim();if(g)lines.push((q+" "+g).trim());}
     return trList([m.strMeal].concat(lines),"en","fr").then(function(t){return {name:t[0],ingredients:t.slice(1)};});
   });
 }
-var resBox=document.getElementById("f-results");
-document.getElementById("f-suggest").addEventListener("click",function(){
-  var q=document.getElementById("f-idea").value.trim();
-  if(!q){toast("Saisis un ingrédient");return;}
-  resBox.replaceChildren();toast("Recherche…");
-  api({action:"suggest",q:q}).then(function(d){
-    if(!d||!d.meals||!d.meals.length){resBox.appendChild(el("p","hint","Aucun plat trouvé. Essaie un autre ingrédient, plus courant."));return;}
-    d.meals.forEach(function(m){
-      var b=el("button","btn",m.name);b.type="button";
-      b.addEventListener("click",function(){
-        toast("Chargement du plat…");
-        api({action:"meal",id:m.id}).then(function(r){
-          if(!r||!r.ingredients){toast("Plat introuvable");return;}
-          document.getElementById("f-name").value=r.name||m.name;
-          document.getElementById("f-ing").value=r.ingredients.join("\n");
-          resBox.replaceChildren();toast("Plat ajouté, pense à enregistrer");
-        }).catch(function(){toast("Chargement impossible");});
+function nextFree(taken){
+  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){
+    var k=d+"-"+SLOTS[j][0];if(!state.meals[k]&&!taken[k])return {day:d,slot:SLOTS[j][0]};
+  }}
+  return {day:0,slot:"s"};
+}
+function terms(){return ideas.q.split(/[,;\n]+/).map(function(t){return t.trim();}).filter(Boolean).slice(0,4);}
+function searchIdeas(){
+  var ts=terms();
+  if(!ts.length){toast("Saisis au moins un ingrédient");return;}
+  ideas.loading=true;ideas.list=null;ideas.sel={};renderIdeas();
+  trList(ts,"fr","en").then(function(en){
+    return Promise.all(en.map(function(t){
+      return fetch(MEALDB+"filter.php?i="+encodeURIComponent(t.toLowerCase().trim().replace(/\s+/g,"_")))
+        .then(function(x){return x.json();}).then(function(d){return d.meals||[];}).catch(function(){return [];});
+    }));
+  }).then(function(res){
+    var map={};
+    res.forEach(function(ms){ms.forEach(function(m){
+      if(!map[m.idMeal])map[m.idMeal]={id:m.idMeal,en:m.strMeal,hits:0};
+      map[m.idMeal].hits++;
+    });});
+    var arr=Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return b.hits-a.hits;}).slice(0,15);
+    return Promise.all(arr.map(function(a){
+      return getMeal(a.id).then(function(m){a.n=m?countIng(m):10;return a;}).catch(function(){a.n=10;return a;});
+    })).then(function(arr){
+      return trList(arr.map(function(a){return a.en;}),"en","fr").then(function(names){
+        arr.forEach(function(a,i){a.name=names[i];a.t=ts.length;});return arr;
       });
-      resBox.appendChild(b);
     });
-  }).catch(function(){toast("Recherche impossible");});
-});
+  }).then(function(arr){ideas.list=arr;ideas.loading=false;renderIdeas();})
+  .catch(function(){ideas.loading=false;ideas.list=[];renderIdeas();toast("Recherche impossible");});
+}
+function addSelected(){
+  var ids=Object.keys(ideas.sel);if(!ids.length)return;
+  var keys={},dup=false,over=0;
+  ids.forEach(function(id){var s=ideas.sel[id],k=s.day+"-"+s.slot;if(keys[k])dup=true;keys[k]=id;if(state.meals[k])over++;});
+  if(dup){toast("Deux recettes sont sur le même créneau");return;}
+  if(over&&!confirm(over+(over>1?" créneaux sont déjà remplis":" créneau est déjà rempli")+". Les remplacer ?"))return;
+  toast("Ajout en cours…");
+  Promise.all(ids.map(function(id){return api({action:"meal",id:id}).then(function(r){return {id:id,r:r};});})).then(function(rs){
+    var n=0;
+    rs.forEach(function(x){
+      if(!x.r||!x.r.ingredients)return;
+      var s=ideas.sel[x.id];state.meals[s.day+"-"+s.slot]={name:x.r.name,ing:x.r.ingredients.join("\n")};n++;
+    });
+    save();ideas.sel={};tab="week";render();toast(n+(n>1?" repas ajoutés":" repas ajouté"));
+  }).catch(function(){toast("Ajout impossible");});
+}
+function sel(cls,opts,val,label,onch){
+  var s=el("select");s.setAttribute("aria-label",label);
+  opts.forEach(function(o,i){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];if(String(o[0])===String(val))op.selected=true;s.appendChild(op);});
+  s.addEventListener("change",function(){onch(s.value);});return s;
+}
+function renderIdeas(){
+  view.replaceChildren();
+  var lab=el("label","","Tes ingrédients, séparés par une virgule");lab.htmlFor="i-q";lab.style.marginTop="0";
+  var inp=document.createElement("input");inp.type="text";inp.id="i-q";inp.value=ideas.q;inp.placeholder="Ex. : poulet, tomate, riz";inp.autocomplete="off";
+  inp.addEventListener("input",function(){ideas.q=inp.value;});
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();searchIdeas();}});
+  view.appendChild(lab);view.appendChild(inp);
+  var bar=el("div","bar");bar.style.marginTop="10px";
+  var b1=el("button","btn main","Trouver des recettes");b1.type="button";b1.addEventListener("click",searchIdeas);
+  var b2=el("button","btn","Chercher sur Marmiton");b2.type="button";
+  b2.addEventListener("click",function(){
+    var q=terms().join(" ");if(!q){toast("Saisis au moins un ingrédient");return;}
+    window.open("https://www.marmiton.org/recettes/recherche.aspx?aqt="+encodeURIComponent(q),"_blank","noopener");
+  });
+  bar.appendChild(b1);bar.appendChild(b2);view.appendChild(bar);
+  if(ideas.loading){view.appendChild(el("p","note","Recherche en cours…"));return;}
+  if(!ideas.list)return;
+  if(!ideas.list.length){view.appendChild(el("p","note","Aucune recette trouvée. Essaie un ingrédient plus courant ou moins d’ingrédients."));return;}
+  var addbar=el("div","addbar");var addBtn=el("button","btn main","");addBtn.type="button";addBtn.addEventListener("click",addSelected);addbar.appendChild(addBtn);
+  function updateBar(){var n=Object.keys(ideas.sel).length;addbar.hidden=!n;addBtn.textContent="Ajouter "+n+(n>1?" recettes":" recette")+" au menu";}
+  [0,1,2].forEach(function(lv){
+    var items=ideas.list.filter(function(a){return levelOf(a.n)===lv;});
+    if(!items.length)return;
+    view.appendChild(el("h2","aisle",LEVELS[lv]+" ("+items.length+")"));
+    items.forEach(function(a){
+      var on=!!ideas.sel[a.id];
+      var card=el("div","idea"+(on?" on":""));
+      var l=el("label","ichk");var cb=document.createElement("input");cb.type="checkbox";cb.checked=on;
+      var tx=el("span","",a.name);
+      tx.appendChild(el("small","",a.n+" ingrédients"+(a.t>1?", "+a.hits+" sur "+a.t+" de tes ingrédients":"")));
+      l.appendChild(cb);l.appendChild(tx);card.appendChild(l);
+      var as=el("div","assign");as.hidden=!on;
+      var cur=ideas.sel[a.id]||{day:0,slot:"s"};
+      as.appendChild(sel("",DAYS.map(function(d,i){return [i,d];}),cur.day,"Jour",function(v){ideas.sel[a.id].day=+v;}));
+      as.appendChild(sel("",SLOTS,cur.slot,"Repas",function(v){ideas.sel[a.id].slot=v;}));
+      card.appendChild(as);
+      cb.addEventListener("change",function(){
+        if(cb.checked){var taken={};Object.keys(ideas.sel).forEach(function(i){taken[ideas.sel[i].day+"-"+ideas.sel[i].slot]=1;});
+          var f=nextFree(taken);ideas.sel[a.id]=f;
+          as.replaceChildren();
+          as.appendChild(sel("",DAYS.map(function(d,i){return [i,d];}),f.day,"Jour",function(v){ideas.sel[a.id].day=+v;}));
+          as.appendChild(sel("",SLOTS,f.slot,"Repas",function(v){ideas.sel[a.id].slot=v;}));
+        }else delete ideas.sel[a.id];
+        as.hidden=!cb.checked;card.classList.toggle("on",cb.checked);updateBar();
+      });
+      view.appendChild(card);
+    });
+  });
+  view.appendChild(addbar);updateBar();
+}
+
 render();
 </script>
 </body>
