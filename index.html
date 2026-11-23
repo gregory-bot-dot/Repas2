@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Menu de la semaine</title>
-<link rel="manifest" href="data:application/manifest+json,{"name":"Menu de la semaine","short_name":"Menu","start_url":".","display":"standalone","background_color":"#EEF2F7","theme_color":"#2F7D4F","lang":"fr","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232F7D4F'/%3E%3Cpath d='M30 35h40v8H30zm0 16h28v8H30zm0 16h34v8H30z' fill='white'/%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}">
+<!-- Manifeste mis à jour avec share_target pour le partage natif -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"Menu de la semaine","short_name":"Menu","start_url":".","display":"standalone","background_color":"#EEF2F7","theme_color":"#2F7D4F","lang":"fr","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%232F7D4F%27/%3E%3Cpath d=%27M30 35h40v8H30zm0 16h28v8H30zm0 16h34v8H30z%27 fill=%27white%27/%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],"share_target":{"action":"/?share=true","method":"GET","enctype":"application/x-www-form-urlencoded","params":{"title":"title","text":"text","url":"url"}}}'>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
 <style>
 :root{--bg:#EEF2F7;--surface:#fff;--ink:#17212B;--mute:#5B6773;--line:#D5DDE6;--acc:#2F7D4F;--accink:#fff;--warn:#C4402B;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -92,8 +93,14 @@ textarea{min-height:130px;resize:vertical}
     <label for="f-name">Repas</label>
     <input type="text" id="f-name" placeholder="Ex. : pâtes à la tomate" autocomplete="off">
     <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-search">Chercher sur Marmiton</button></div>
+    
     <label for="f-url">Lien d’une recette</label>
-    <input type="text" id="f-url" inputmode="url" placeholder="https://www.marmiton.org/…" autocomplete="off">
+    <!-- MODIFICATION : Ajout du bouton "Coller" à côté du champ URL -->
+    <div style="display:flex; gap:8px; margin-bottom: 8px;">
+      <input type="text" id="f-url" inputmode="url" placeholder="https://www.marmiton.org/…" autocomplete="off" style="flex:1;">
+      <button type="button" class="btn main" id="f-paste" style="flex:0 0 auto; padding:10px 16px; font-weight:800;">Coller</button>
+    </div>
+    
     <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-import">Importer les ingrédients</button></div>
     <label for="f-ing">Ingrédients (un par ligne)</label>
     <textarea id="f-ing" placeholder="400 g de pâtes&#10;3 tomates&#10;1 oignon"></textarea>
@@ -177,17 +184,11 @@ function fmt(it){
 
 var AISLES=["Fruits et légumes","Viandes et poissons","Produits frais","Épicerie","Boulangerie","Boissons","Autres"];
 var KW=[
-  /* 0 Fruits et légumes */
   "tomate carotte oignon ail echalote courgette aubergine poivron patate pomme de terre champignon salade laitue epinard concombre poireau chou brocoli haricot citron orange pomme banane fraise framboise myrtille cerise raisin poire peche abricot prune kiwi ananas mangue melon pasteque avocat celeri navet radis betterave potiron courge mais persil basilic coriandre ciboulette thym menthe romarin gingembre curcuma fruit legume herbe asperge artichaut fenouil endive mâche roquette cresson petit pois",
-  /* 1 Viandes et poissons */
   "poulet dinde boeuf bœuf veau porc agneau jambon lardon saucisse steak viande saumon thon cabillaud poisson crevette moule merlu canard dinde volaille bacon merguez chorizo saumon truite sardine maquereau bar sole cabillaud colin crevette gambas calamar seiche moule huitre coquille saint jacques",
-  /* 2 Produits frais */
   "lait creme fromage beurre yaourt oeuf œuf mozzarella parmesan gruyere emmental feta ricotta mascarpone creme fraiche fromage blanc skyr kefir beurre margarine",
-  /* 3 Épicerie */
   "pates riz farine sucre sel poivre huile vinaigre sauce conserve lentille chiche semoule quinoa epice moutarde bouillon chocolat miel levure cafe the cacao cornichon olive capre ketchup mayonnaise harissa curry paprika cumin curcuma cannelle vanille levure chimique bicarbonate flocons d avoine cereale muesli confiture compote",
-  /* 4 Boulangerie */
   "pain baguette brioche croissant pain de mie biscotte toast",
-  /* 5 Boissons */
   "eau jus soda biere vin lait vegetal limonade sirop"
 ];
 function aisle(n){
@@ -314,10 +315,10 @@ function api(p){
 }
 
 function nextFree(taken){
-  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){ /* priorise midi puis soir */
+  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){ 
     var k=d+"-"+SLOTS[j][0];if(!state.meals[k]&&!taken[k])return {day:d,slot:SLOTS[j][0]};
   }}
-  for(var d=0;d<7;d++){ /* puis matin si besoin */
+  for(var d=0;d<7;d++){ 
     var k=d+"-p";if(!state.meals[k]&&!taken[k])return {day:d,slot:"p"};
   }
   return {day:0,slot:"s"};
@@ -377,7 +378,7 @@ function autoFill(){
   Object.keys(ideas.sel).forEach(function(id){var s=ideas.sel[id];taken[s.day+"-"+s.slot]=1;});
   ids.forEach(function(id){
     var s=ideas.sel[id];
-    if(state.meals[s.day+"-"+s.slot]){ /* already assigned, keep */
+    if(state.meals[s.day+"-"+s.slot]){ 
     }else{
       var f=nextFree(taken);
       ideas.sel[id]=f;taken[f.day+"-"+f.slot]=1;
@@ -536,6 +537,7 @@ function parseRecipe(html){
   }catch(e){}}
   return out;
 }
+
 document.getElementById("f-import").addEventListener("click",function(){
   var u=document.getElementById("f-url").value.trim();
   if(!/^https?:\/\//.test(u)){toast("Colle d’abord le lien d’une recette");return;}
@@ -553,6 +555,57 @@ document.getElementById("f-import").addEventListener("click",function(){
   });
 });
 
+/* --- NOUVEAU : Bouton Coller depuis le presse-papiers --- */
+document.getElementById("f-paste").addEventListener("click", async function() {
+  try {
+    // Demande l'accès au presse-papiers
+    const text = await navigator.clipboard.readText();
+    
+    // On cherche une URL Marmiton dans le texte copié
+    const urlMatch = text.match(/https?:\/\/(www\.)?marmiton\.org[^\s]+/);
+    
+    if (urlMatch) {
+      const cleanUrl = urlMatch[0];
+      document.getElementById("f-url").value = cleanUrl;
+      toast("Lien collé ! Importation...");
+      
+      // On simule le clic sur le bouton "Importer les ingrédients"
+      document.getElementById("f-import").click();
+    } else {
+      toast("Aucun lien Marmiton trouvé dans le presse-papiers.");
+    }
+  } catch (err) {
+    console.error(err);
+    toast("Copie bloquée. Collez le lien manuellement.");
+  }
+});
+
+/* --- NOUVEAU : Gestion du Web Share Target --- */
+function checkSharedTarget() {
+  const params = new URLSearchParams(window.location.search);
+  // Si l'app est ouverte via le partage
+  if (params.get('share') === 'true') {
+    let sharedUrl = params.get('url') || params.get('text') || '';
+    // On nettoie l'URL au cas où il y a du texte autour
+    const match = sharedUrl.match(/https?:\/\/[^\s]+/);
+    if (match) sharedUrl = match[0];
+
+    if (sharedUrl && sharedUrl.includes('marmiton.org')) {
+      // On va sur la page des repas (pour avoir le contexte)
+      go("week");
+      
+      // On ouvre la modale sur le premier créneau vide (Lundi Midi par défaut)
+      setTimeout(() => {
+        openSheet("0-m", "Lundi, midi"); 
+        
+        // On remplit l'URL et on lance l'import
+        document.getElementById("f-url").value = sharedUrl;
+        document.getElementById("f-import").click();
+      }, 100);
+    }
+  }
+}
+
 /* PWA léger */
 if("serviceWorker" in navigator){
   var sw=`self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});self.addEventListener('fetch',e=>{e.respondWith(caches.open('menu-v2').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(e.request.method==='GET'&&res.ok)c.put(e.request,res.clone());return res}).catch(()=>caches.match('./'))))})`;
@@ -561,6 +614,8 @@ if("serviceWorker" in navigator){
 }
 
 route();
+// Appel de la vérification après le chargement initial
+setTimeout(checkSharedTarget, 100);
 </script>
 </body>
 </html>
