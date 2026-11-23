@@ -6,9 +6,10 @@
 <meta name="theme-color" content="#2F7D4F" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111A22" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Menu">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Menu de la semaine</title>
-<!-- Manifeste mis à jour avec share_target pour le partage natif -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
@@ -94,14 +95,13 @@ textarea{min-height:130px;resize:vertical}
     <label for="f-name">Repas</label>
     <input type="text" id="f-name" placeholder="Ex. : pâtes à la tomate" autocomplete="off">
     <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-search">Chercher sur Marmiton</button></div>
-    
+
     <label for="f-url">Lien d’une recette</label>
-    <!-- MODIFICATION : Ajout du bouton "Coller" à côté du champ URL -->
     <div style="display:flex; gap:8px; margin-bottom: 8px;">
       <input type="text" id="f-url" inputmode="url" placeholder="https://www.marmiton.org/…" autocomplete="off" style="flex:1;">
       <button type="button" class="btn main" id="f-paste" style="flex:0 0 auto; padding:10px 16px; font-weight:800;">Coller</button>
     </div>
-    
+
     <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-import">Importer les ingrédients</button></div>
     <label for="f-ing">Ingrédients (un par ligne)</label>
     <textarea id="f-ing" placeholder="400 g de pâtes&#10;3 tomates&#10;1 oignon"></textarea>
@@ -120,9 +120,10 @@ textarea{min-height:130px;resize:vertical}
 <div id="toast" role="status"></div>
 
 <script>
-/* Menu de la semaine – v2 (peaufiné) */
+/* Menu de la semaine – v3 */
 var DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 var KEY="menu-semaine-v1";
+var DKEY="menu-draft";
 
 var state={meals:{},checked:{},people:2};
 try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.meals)state=p;if(!state.checked)state.checked={};if(!state.people)state.people=2;}}catch(e){}
@@ -253,7 +254,11 @@ function openSheet(key,title){
   sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
   setTimeout(function(){document.getElementById("f-name").focus();},50);
 }
-function closeSheet(){sheet.classList.remove("open");sheet.setAttribute("aria-hidden","true");editKey=null;}
+function closeSheet(){
+  sheet.classList.remove("open");sheet.setAttribute("aria-hidden","true");
+  try{localStorage.removeItem(DKEY);}catch(e){}
+  editKey=null;
+}
 document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
   var name=document.getElementById("f-name").value.trim(),ing=document.getElementById("f-ing").value;
@@ -267,7 +272,7 @@ document.getElementById("f-clear").addEventListener("click",function(){
   if(!state.meals[editKey]){closeSheet();return;}
   if(confirm("Vider ce repas ?")){delete state.meals[editKey];save();closeSheet();render();}
 });
-sheet.addEventListener("click",function(e){if(e.target===sheet)closeSheet();});
+/* La fenêtre ne se ferme plus en touchant la zone grisée : seulement via Fermer / Enregistrer */
 
 function decode(t){var n=document.createElement("textarea");n.innerHTML=t;return n.value;}
 document.getElementById("f-search").addEventListener("click",function(){
@@ -316,10 +321,10 @@ function api(p){
 }
 
 function nextFree(taken){
-  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){ 
+  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){
     var k=d+"-"+SLOTS[j][0];if(!state.meals[k]&&!taken[k])return {day:d,slot:SLOTS[j][0]};
   }}
-  for(var d=0;d<7;d++){ 
+  for(var d=0;d<7;d++){
     var k=d+"-p";if(!state.meals[k]&&!taken[k])return {day:d,slot:"p"};
   }
   return {day:0,slot:"s"};
@@ -379,7 +384,7 @@ function autoFill(){
   Object.keys(ideas.sel).forEach(function(id){var s=ideas.sel[id];taken[s.day+"-"+s.slot]=1;});
   ids.forEach(function(id){
     var s=ideas.sel[id];
-    if(state.meals[s.day+"-"+s.slot]){ 
+    if(state.meals[s.day+"-"+s.slot]){
     }else{
       var f=nextFree(taken);
       ideas.sel[id]=f;taken[f.day+"-"+f.slot]=1;
@@ -539,6 +544,21 @@ function parseRecipe(html){
   return out;
 }
 
+/* --- Brouillon automatique (au cas où l'app se recharge) --- */
+function saveDraft(){
+  if(editKey==null)return;
+  try{localStorage.setItem(DKEY,JSON.stringify({
+    key:editKey,title:document.getElementById("sh-title").textContent,
+    name:document.getElementById("f-name").value,url:document.getElementById("f-url").value,
+    ing:document.getElementById("f-ing").value,base:document.getElementById("f-base").value,
+    ppl:document.getElementById("f-ppl").value}));}catch(e){}
+}
+["f-name","f-url","f-ing","f-base","f-ppl"].forEach(function(id){
+  document.getElementById(id).addEventListener("input",saveDraft);
+});
+document.addEventListener("visibilitychange",saveDraft);
+
+/* --- Import des ingrédients --- */
 document.getElementById("f-import").addEventListener("click",function(){
   var u=document.getElementById("f-url").value.trim();
   if(!/^https?:\/\//.test(u)){toast("Colle d’abord le lien d’une recette");return;}
@@ -549,6 +569,7 @@ document.getElementById("f-import").addEventListener("click",function(){
     document.getElementById("f-ing").value=r.ing.map(decode).join("\n");
     var y=parseInt(String(Array.isArray(r.yld)?r.yld[0]:r.yld).replace(/\D+/g," ").trim(),10);
     if(y>0)document.getElementById("f-base").value=y;
+    saveDraft();
     toast("Ingrédients importés");
   }).catch(function(){
     toast("Import impossible — colle les ingrédients à la main");
@@ -556,50 +577,50 @@ document.getElementById("f-import").addEventListener("click",function(){
   });
 });
 
-/* --- NOUVEAU : Bouton Coller depuis le presse-papiers --- */
-document.getElementById("f-paste").addEventListener("click", async function() {
-  try {
-    // Demande l'accès au presse-papiers
-    const text = await navigator.clipboard.readText();
-    
-    // On cherche une URL Marmiton dans le texte copié
-    const urlMatch = text.match(/https?:\/\/(www\.)?marmiton\.org[^\s]+/);
-    
-    if (urlMatch) {
-      const cleanUrl = urlMatch[0];
-      document.getElementById("f-url").value = cleanUrl;
-      toast("Lien collé ! Importation...");
-      
-      // On simule le clic sur le bouton "Importer les ingrédients"
-      document.getElementById("f-import").click();
-    } else {
-      toast("Aucun lien Marmiton trouvé dans le presse-papiers.");
+/* --- Bouton Coller (lit texte ET lien du presse-papiers) --- */
+document.getElementById("f-paste").addEventListener("click", async function(){
+  var text="";
+  try{
+    if(navigator.clipboard.read){
+      var items=await navigator.clipboard.read();
+      for(var i=0;i<items.length&&!text;i++){
+        var types=["text/uri-list","text/plain"];
+        for(var j=0;j<types.length;j++){
+          if(items[i].types.indexOf(types[j])>-1){
+            text=await (await items[i].getType(types[j])).text();
+            if(text)break;
+          }
+        }
+      }
     }
-  } catch (err) {
-    console.error(err);
-    toast("Copie bloquée. Collez le lien manuellement.");
+    if(!text)text=await navigator.clipboard.readText();
+  }catch(err){
+    try{text=await navigator.clipboard.readText();}catch(e2){}
+  }
+  var m=(text||"").match(/https?:\/\/[^\s]+/);
+  if(m){
+    document.getElementById("f-url").value=m[0];
+    saveDraft();
+    toast("Lien collé ! Importation…");
+    document.getElementById("f-import").click();
+  }else{
+    toast("Rien de lisible : appui long dans la case, puis Coller");
+    document.getElementById("f-url").focus();
   }
 });
 
-/* --- NOUVEAU : Gestion du Web Share Target --- */
+/* --- Web Share Target --- */
 function checkSharedTarget() {
   const params = new URLSearchParams(window.location.search);
-  // Si l'app est ouverte via le partage
   if (params.get('share') === 'true') {
     let sharedUrl = params.get('url') || params.get('text') || '';
-    // On nettoie l'URL au cas où il y a du texte autour
     const match = sharedUrl.match(/https?:\/\/[^\s]+/);
     if (match) sharedUrl = match[0];
 
     if (sharedUrl && sharedUrl.includes('marmiton.org')) {
-      // On va sur la page des repas (pour avoir le contexte)
       go("week");
-      
-      // On ouvre la modale sur le premier créneau vide (Lundi Midi par défaut)
       setTimeout(() => {
-        openSheet("0-m", "Lundi, midi"); 
-        
-        // On remplit l'URL et on lance l'import
+        openSheet("0-m", "Lundi, midi");
         document.getElementById("f-url").value = sharedUrl;
         document.getElementById("f-import").click();
       }, 100);
@@ -614,8 +635,20 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
 }
 
+/* --- Restauration du brouillon au lancement --- */
+try{
+  var dr=JSON.parse(localStorage.getItem(DKEY)||"null");
+  if(dr&&dr.key){
+    openSheet(dr.key,dr.title);
+    document.getElementById("f-name").value=dr.name;
+    document.getElementById("f-url").value=dr.url;
+    document.getElementById("f-ing").value=dr.ing;
+    document.getElementById("f-base").value=dr.base;
+    document.getElementById("f-ppl").value=dr.ppl;
+  }
+}catch(e){}
+
 route();
-// Appel de la vérification après le chargement initial
 setTimeout(checkSharedTarget, 100);
 </script>
 </body>
