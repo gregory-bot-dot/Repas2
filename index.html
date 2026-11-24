@@ -228,16 +228,30 @@ function generateFamilyCode(){
 }
 
 function startSync(code){
+  if(!authReady && !auth.currentUser){
+    toast("Connexion en cours… réessaie dans 2 secondes");
+    setTimeout(function(){ startSync(code); }, 1500);
+    return;
+  }
+  code = String(code||"").trim().toUpperCase();
+  if(!code){toast("Code invalide");return;}
+
   familyCode = code;
   localStorage.setItem(FAMILY_KEY, code);
   syncReady = true;
 
   // Écoute en temps réel
+  db.ref("families/"+code+"/data").off(); // évite les doubles listeners
   db.ref("families/"+code+"/data").on("value", function(snap){
     var remote = snap.val();
     if(!remote){
       // Première fois : on pousse l’état local
-      db.ref("families/"+code+"/data").set(state);
+      db.ref("families/"+code+"/data").set(state).then(function(){
+        toast("Espace créé · code "+code);
+      }).catch(function(err){
+        console.warn(err);
+        toast("Erreur écriture : "+(err.message||err.code||""));
+      });
       return;
     }
     // On applique les données distantes
@@ -252,7 +266,7 @@ function startSync(code){
     render();
   }, function(err){
     console.warn("Sync listen error", err);
-    toast("Impossible de synchroniser");
+    toast("Impossible de synchroniser : "+(err.message||err.code||""));
   });
 }
 
@@ -348,11 +362,17 @@ function openSyncSheet(){
 }
 
 /* Auth anonyme au démarrage */
-auth.signInAnonymously().then(function(){
-  if(familyCode) startSync(familyCode);
-}).catch(function(err){
+var authReady = false;
+auth.onAuthStateChanged(function(user){
+  if(user){
+    authReady = true;
+    console.log("Firebase auth OK", user.uid);
+    if(familyCode && !syncReady) startSync(familyCode);
+  }
+});
+auth.signInAnonymously().catch(function(err){
   console.warn("Auth error", err);
-  toast("Connexion cloud impossible");
+  toast("Connexion cloud impossible : "+(err.message||err.code||"erreur"));
 });
 
 
