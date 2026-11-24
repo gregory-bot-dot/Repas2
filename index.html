@@ -6,10 +6,12 @@
 <meta name="theme-color" content="#2F7D4F" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111A22" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Menu">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Menu de la semaine</title>
-<!-- Manifeste mis à jour avec share_target pour le partage natif -->
-<link rel="manifest" href='data:application/manifest+json,{"name":"Menu de la semaine","short_name":"Menu","start_url":".","display":"standalone","background_color":"#EEF2F7","theme_color":"#2F7D4F","lang":"fr","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%232F7D4F%27/%3E%3Cpath d=%27M30 35h40v8H30zm0 16h28v8H30zm0 16h34v8H30z%27 fill=%27white%27/%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],"share_target":{"action":"/?share=true","method":"GET","enctype":"application/x-www-form-urlencoded","params":{"title":"title","text":"text","url":"url"}}}'>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
 <style>
 :root{--bg:#EEF2F7;--surface:#fff;--ink:#17212B;--mute:#5B6773;--line:#D5DDE6;--acc:#2F7D4F;--accink:#fff;--warn:#C4402B;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -62,11 +64,13 @@ h1{font-size:28px;font-weight:800;margin:8px 0 14px;letter-spacing:-.02em}
 .tile .tt small{display:block;font-size:14px;font-weight:400;color:var(--mute);margin-top:2px}
 .tile:focus-visible,.back:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .note{color:var(--mute);padding:24px 8px;text-align:center}
-#sheet{position:fixed;inset:0;background:rgba(10,16,22,0);display:flex;align-items:flex-end;z-index:20;pointer-events:none;transition:background .25s}
-#sheet.open{background:rgba(10,16,22,.55);pointer-events:auto}
-#sheet form,#sheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
-#sheet.open form,#sheet.open .panel{transform:translateY(0)}
-#sheet h3{margin:0 0 12px;font-size:20px;font-weight:800}
+#sheet,#aisheet{position:fixed;inset:0;background:rgba(10,16,22,0);display:flex;align-items:flex-end;z-index:20;pointer-events:none;transition:background .25s}
+#sheet.open,#aisheet.open{background:rgba(10,16,22,.55);pointer-events:auto}
+#aisheet{z-index:25}
+#sheet form,#sheet .panel,#aisheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+#sheet.open form,#sheet.open .panel,#aisheet.open .panel{transform:translateY(0)}
+#aisheet .panel{max-height:92vh;min-height:60vh;overflow:auto}
+#sheet h3,#aisheet h3{margin:0 0 12px;font-size:20px;font-weight:800}
 label{display:block;font-weight:600;font-size:14px;margin:10px 0 4px}
 input[type=text],input[type=number],textarea,select{width:100%;font:inherit;font-size:16px;font-family:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 textarea{min-height:130px;resize:vertical}
@@ -75,6 +79,13 @@ textarea{min-height:130px;resize:vertical}
 .sug{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:30vh;overflow:auto}
 .sug .btn{text-align:left;font-weight:400}
 #sheet form{max-height:92vh;overflow:auto}
+.rec{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--ink);font:inherit;font-family:inherit;cursor:pointer}
+.rec:active{transform:scale(.99)}
+.rec strong{display:block;font-weight:800}
+.rec small{display:block;color:var(--mute);font-size:13px;margin-top:2px}
+.ingl{padding:8px 0;border-top:1px solid var(--line)}
+.steps{margin:0 0 8px;padding-left:22px}
+.steps li{margin-bottom:10px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:30;transition:opacity .2s,transform .2s;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .stats{display:flex;gap:10px;margin-bottom:18px}
@@ -92,18 +103,19 @@ textarea{min-height:130px;resize:vertical}
     <h3 id="sh-title"></h3>
     <label for="f-name">Repas</label>
     <input type="text" id="f-name" placeholder="Ex. : pâtes à la tomate" autocomplete="off">
-    <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-search">Chercher sur Marmiton</button></div>
-    
+    <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-search">Chercher sur Marmiton</button><button type="button" class="btn main" id="f-ai">Chercher sur AI Hub</button></div>
+
     <label for="f-url">Lien d’une recette</label>
-    <!-- MODIFICATION : Ajout du bouton "Coller" à côté du champ URL -->
     <div style="display:flex; gap:8px; margin-bottom: 8px;">
       <input type="text" id="f-url" inputmode="url" placeholder="https://www.marmiton.org/…" autocomplete="off" style="flex:1;">
       <button type="button" class="btn main" id="f-paste" style="flex:0 0 auto; padding:10px 16px; font-weight:800;">Coller</button>
     </div>
-    
+
     <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-import">Importer les ingrédients</button></div>
     <label for="f-ing">Ingrédients (un par ligne)</label>
     <textarea id="f-ing" placeholder="400 g de pâtes&#10;3 tomates&#10;1 oignon"></textarea>
+    <label for="f-steps">Étapes (facultatif)</label>
+    <textarea id="f-steps" style="min-height:90px" placeholder="1. Faire cuire les pâtes…"></textarea>
     <div class="bar" style="margin:12px 0 0">
       <div style="flex:1"><label for="f-base" style="margin-top:0">Recette pour</label><input type="number" id="f-base" min="1" max="99" inputmode="numeric"></div>
       <div style="flex:1"><label for="f-ppl" style="margin-top:0">Je cuisine pour</label><input type="number" id="f-ppl" min="1" max="99" inputmode="numeric"></div>
@@ -116,12 +128,14 @@ textarea{min-height:130px;resize:vertical}
     </div>
   </form>
 </div>
+<div id="aisheet" aria-hidden="true"><div class="panel" id="ai-panel"></div></div>
 <div id="toast" role="status"></div>
 
 <script>
-/* Menu de la semaine – v2 (peaufiné) */
+/* Menu de la semaine – v3 */
 var DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 var KEY="menu-semaine-v1";
+var DKEY="menu-draft";
 
 var state={meals:{},checked:{},people:2};
 try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.meals)state=p;if(!state.checked)state.checked={};if(!state.people)state.people=2;}}catch(e){}
@@ -245,6 +259,7 @@ function openSheet(key,title){
   document.getElementById("sh-title").textContent=title;
   document.getElementById("f-name").value=m.name||"";
   document.getElementById("f-ing").value=m.ing||"";
+  document.getElementById("f-steps").value=m.steps||"";
   document.getElementById("f-url").value="";
   var pp=m.people||state.people||2;
   document.getElementById("f-ppl").value=pp;
@@ -252,13 +267,17 @@ function openSheet(key,title){
   sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
   setTimeout(function(){document.getElementById("f-name").focus();},50);
 }
-function closeSheet(){sheet.classList.remove("open");sheet.setAttribute("aria-hidden","true");editKey=null;}
+function closeSheet(){
+  sheet.classList.remove("open");sheet.setAttribute("aria-hidden","true");
+  try{localStorage.removeItem(DKEY);}catch(e){}
+  editKey=null;
+}
 document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
-  var name=document.getElementById("f-name").value.trim(),ing=document.getElementById("f-ing").value;
+  var name=document.getElementById("f-name").value.trim(),ing=document.getElementById("f-ing").value,steps=document.getElementById("f-steps").value;
   var ppl=Math.max(1,parseInt(document.getElementById("f-ppl").value,10)||2),base=Math.max(1,parseInt(document.getElementById("f-base").value,10)||ppl);
   state.people=ppl;
-  if(name||ing.trim())state.meals[editKey]={name:name,ing:ing,base:base,people:ppl};else delete state.meals[editKey];
+  if(name||ing.trim())state.meals[editKey]={name:name,ing:ing,steps:steps,base:base,people:ppl};else delete state.meals[editKey];
   save();closeSheet();render();
 });
 document.getElementById("f-cancel").addEventListener("click",closeSheet);
@@ -266,7 +285,7 @@ document.getElementById("f-clear").addEventListener("click",function(){
   if(!state.meals[editKey]){closeSheet();return;}
   if(confirm("Vider ce repas ?")){delete state.meals[editKey];save();closeSheet();render();}
 });
-sheet.addEventListener("click",function(e){if(e.target===sheet)closeSheet();});
+/* La fenêtre ne se ferme plus en touchant la zone grisée : seulement via Fermer / Enregistrer */
 
 function decode(t){var n=document.createElement("textarea");n.innerHTML=t;return n.value;}
 document.getElementById("f-search").addEventListener("click",function(){
@@ -315,10 +334,10 @@ function api(p){
 }
 
 function nextFree(taken){
-  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){ 
+  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){
     var k=d+"-"+SLOTS[j][0];if(!state.meals[k]&&!taken[k])return {day:d,slot:SLOTS[j][0]};
   }}
-  for(var d=0;d<7;d++){ 
+  for(var d=0;d<7;d++){
     var k=d+"-p";if(!state.meals[k]&&!taken[k])return {day:d,slot:"p"};
   }
   return {day:0,slot:"s"};
@@ -378,7 +397,7 @@ function autoFill(){
   Object.keys(ideas.sel).forEach(function(id){var s=ideas.sel[id];taken[s.day+"-"+s.slot]=1;});
   ids.forEach(function(id){
     var s=ideas.sel[id];
-    if(state.meals[s.day+"-"+s.slot]){ 
+    if(state.meals[s.day+"-"+s.slot]){
     }else{
       var f=nextFree(taken);
       ideas.sel[id]=f;taken[f.day+"-"+f.slot]=1;
@@ -423,7 +442,9 @@ function renderIdeas(){
     var q=terms().join(" ");if(!q){toast("Saisis au moins un ingrédient");return;}
     window.open("https://www.marmiton.org/recettes/recherche.aspx?aqt="+encodeURIComponent(q),"_blank","noopener");
   });
-  bar.appendChild(b1);bar.appendChild(b2);view.appendChild(bar);
+  var b3=el("button","btn main","Chercher sur AI Hub");b3.type="button";
+  b3.addEventListener("click",function(){aiOpen("ideas",terms().join(", "));});
+  bar.appendChild(b1);bar.appendChild(b2);bar.appendChild(b3);view.appendChild(bar);
   if(ideas.loading){view.appendChild(el("p","note","Recherche en cours…"));return;}
   if(!ideas.list)return;
   if(!ideas.list.length){view.appendChild(el("p","note","Aucune recette trouvée. Essaie un ingrédient plus courant ou moins d’ingrédients."));return;}
@@ -538,6 +559,21 @@ function parseRecipe(html){
   return out;
 }
 
+/* --- Brouillon automatique (au cas où l'app se recharge) --- */
+function saveDraft(){
+  if(editKey==null)return;
+  try{localStorage.setItem(DKEY,JSON.stringify({
+    key:editKey,title:document.getElementById("sh-title").textContent,
+    name:document.getElementById("f-name").value,url:document.getElementById("f-url").value,
+    ing:document.getElementById("f-ing").value,steps:document.getElementById("f-steps").value,base:document.getElementById("f-base").value,
+    ppl:document.getElementById("f-ppl").value}));}catch(e){}
+}
+["f-name","f-url","f-ing","f-steps","f-base","f-ppl"].forEach(function(id){
+  document.getElementById(id).addEventListener("input",saveDraft);
+});
+document.addEventListener("visibilitychange",saveDraft);
+
+/* --- Import des ingrédients --- */
 document.getElementById("f-import").addEventListener("click",function(){
   var u=document.getElementById("f-url").value.trim();
   if(!/^https?:\/\//.test(u)){toast("Colle d’abord le lien d’une recette");return;}
@@ -548,6 +584,7 @@ document.getElementById("f-import").addEventListener("click",function(){
     document.getElementById("f-ing").value=r.ing.map(decode).join("\n");
     var y=parseInt(String(Array.isArray(r.yld)?r.yld[0]:r.yld).replace(/\D+/g," ").trim(),10);
     if(y>0)document.getElementById("f-base").value=y;
+    saveDraft();
     toast("Ingrédients importés");
   }).catch(function(){
     toast("Import impossible — colle les ingrédients à la main");
@@ -555,50 +592,249 @@ document.getElementById("f-import").addEventListener("click",function(){
   });
 });
 
-/* --- NOUVEAU : Bouton Coller depuis le presse-papiers --- */
-document.getElementById("f-paste").addEventListener("click", async function() {
-  try {
-    // Demande l'accès au presse-papiers
-    const text = await navigator.clipboard.readText();
-    
-    // On cherche une URL Marmiton dans le texte copié
-    const urlMatch = text.match(/https?:\/\/(www\.)?marmiton\.org[^\s]+/);
-    
-    if (urlMatch) {
-      const cleanUrl = urlMatch[0];
-      document.getElementById("f-url").value = cleanUrl;
-      toast("Lien collé ! Importation...");
-      
-      // On simule le clic sur le bouton "Importer les ingrédients"
-      document.getElementById("f-import").click();
-    } else {
-      toast("Aucun lien Marmiton trouvé dans le presse-papiers.");
+/* --- Bouton Coller (lit texte ET lien du presse-papiers) --- */
+document.getElementById("f-paste").addEventListener("click", async function(){
+  var text="";
+  try{
+    if(navigator.clipboard.read){
+      var items=await navigator.clipboard.read();
+      for(var i=0;i<items.length&&!text;i++){
+        var types=["text/uri-list","text/plain"];
+        for(var j=0;j<types.length;j++){
+          if(items[i].types.indexOf(types[j])>-1){
+            text=await (await items[i].getType(types[j])).text();
+            if(text)break;
+          }
+        }
+      }
     }
-  } catch (err) {
-    console.error(err);
-    toast("Copie bloquée. Collez le lien manuellement.");
+    if(!text)text=await navigator.clipboard.readText();
+  }catch(err){
+    try{text=await navigator.clipboard.readText();}catch(e2){}
+  }
+  var m=(text||"").match(/https?:\/\/[^\s]+/);
+  if(m){
+    document.getElementById("f-url").value=m[0];
+    saveDraft();
+    toast("Lien collé ! Importation…");
+    document.getElementById("f-import").click();
+  }else{
+    toast("Rien de lisible : appui long dans la case, puis Coller");
+    document.getElementById("f-url").focus();
   }
 });
 
-/* --- NOUVEAU : Gestion du Web Share Target --- */
+
+/* ============================================================
+   PASSERELLE AI HUB : recettes proposées par l'IA
+   ============================================================ */
+var AI_PROXY="https://ai-hub-proxy.pasquet-gregory.workers.dev";
+var aiS={ctx:"sheet",q:"",loading:false,err:"",list:null,detail:null,dLoading:false,dName:"",req:0};
+var aiListCache={},aiDetailCache={};
+var aiSheet=document.getElementById("aisheet"),aiPanel=document.getElementById("ai-panel");
+
+function aiAsk(prompt){
+  var ctl=new AbortController(),t=setTimeout(function(){ctl.abort();},70000);
+  return fetch(AI_PROXY,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({mode:"auto",messages:[{role:"user",content:prompt}],stream:true}),signal:ctl.signal})
+  .then(function(r){
+    if(!r.ok)return r.text().then(function(x){throw new Error("HTTP "+r.status+" "+x.slice(0,120));});
+    return r.text();
+  }).then(function(raw){
+    clearTimeout(t);
+    var out="";
+    raw.split("\n").forEach(function(line){
+      var l=line.trim();if(l.indexOf("data:")!==0)return;
+      var d=l.slice(5).trim();if(d==="[DONE]")return;
+      try{var j=JSON.parse(d);var c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;if(c)out+=c;}catch(e){}
+    });
+    if(!out){
+      try{var j2=JSON.parse(raw);out=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||"";}catch(e){}
+    }
+    if(!out)throw new Error("Réponse vide");
+    return out;
+  }).catch(function(e){
+    clearTimeout(t);
+    throw new Error(e&&e.name==="AbortError"?"Délai dépassé":(e&&e.message)||"Réseau");
+  });
+}
+function aiJSON(text,open,close){
+  text=String(text).replace(/<think>[\s\S]*?<\/think>/gi,"").replace(/```json|```/gi,"");
+  var a=text.indexOf(open),b=text.lastIndexOf(close);
+  if(a<0||b<=a)return null;
+  try{return JSON.parse(text.slice(a,b+1));}catch(e){return null;}
+}
+function aiLine(x){
+  if(typeof x==="string")return x.trim();
+  if(x&&typeof x==="object")return Object.keys(x).map(function(k){return x[k];}).join(" ").trim();
+  return "";
+}
+function aiOpen(ctx,q){
+  aiS.ctx=ctx;aiS.q=q||"";aiS.err="";aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.list=aiListCache[aiS.q.toLowerCase()]||null;
+  aiSheet.classList.add("open");aiSheet.setAttribute("aria-hidden","false");
+  aiRender();
+  if(aiS.q.trim()&&!aiS.list)aiSearch();
+}
+function aiClose(){aiSheet.classList.remove("open");aiSheet.setAttribute("aria-hidden","true");aiS.req++;}
+
+function aiSearch(){
+  var q=aiS.q.trim();
+  if(!q){toast("Saisis un plat ou des ingrédients");return;}
+  var my=++aiS.req;
+  aiS.inDetail=false;aiS.loading=true;aiS.err="";aiS.list=null;aiS.detail=null;aiRender();
+  var prompt="Propose 12 idées de recettes de cuisine pour cette demande : « "+q+" » (un nom de plat ou des ingrédients disponibles). "+
+    "Varie les recettes, de faciles à élaborées. Réponds UNIQUEMENT avec un tableau JSON, sans texte autour ni markdown, au format : "+
+    '[{"nom":"Nom de la recette","description":"une phrase courte","temps":"30 min"}]';
+  function attempt(n){
+    return aiAsk(prompt).then(function(txt){
+      var arr=aiJSON(txt,"[","]");
+      if(Array.isArray(arr)&&arr.length)return arr;
+      if(n<1)return attempt(n+1);
+      throw new Error("Réponse illisible, réessaie");
+    });
+  }
+  attempt(0).then(function(arr){
+    if(my!==aiS.req)return;
+    var list=arr.map(function(r){
+      if(typeof r==="string")return {nom:r,description:"",temps:""};
+      return {nom:String(r.nom||r.name||r.titre||"").trim(),description:String(r.description||"").trim(),temps:String(r.temps||"").trim()};
+    }).filter(function(r){return r.nom;}).slice(0,15);
+    if(!list.length)throw new Error("Aucune recette trouvée");
+    aiListCache[q.toLowerCase()]=list;aiS.list=list;aiS.loading=false;aiRender();
+  }).catch(function(e){
+    if(my!==aiS.req)return;
+    aiS.loading=false;aiS.err=e.message||"Erreur";aiRender();
+  });
+}
+
+function aiDetail(name){
+  var my=++aiS.req;aiS.dName=name;
+  if(aiDetailCache[name]){aiS.detail=aiDetailCache[name];aiS.dLoading=false;aiRender();return;}
+  aiS.dName=name;aiS.dLoading=true;aiS.err="";aiS.detail=null;aiRender();
+  var prompt="Donne la recette « "+name+" » pour 4 personnes. Réponds UNIQUEMENT avec un objet JSON, sans texte autour ni markdown, au format : "+
+    '{"nom":"…","personnes":4,"ingredients":["400 g de pâtes","3 tomates","1 oignon"],"etapes":["Première étape…","Deuxième étape…"]}. '+
+    "Chaque ingrédient sur une chaîne, la quantité d'abord puis l'ingrédient, avec les unités g, kg, ml, cl ou l.";
+  function attempt(n){
+    return aiAsk(prompt).then(function(txt){
+      var o=aiJSON(txt,"{","}");
+      if(o&&Array.isArray(o.ingredients)&&o.ingredients.length)return o;
+      if(n<1)return attempt(n+1);
+      throw new Error("Recette illisible, réessaie");
+    });
+  }
+  attempt(0).then(function(o){
+    if(my!==aiS.req)return;
+    var d={
+      nom:String(o.nom||name).trim()||name,
+      personnes:Math.max(1,parseInt(o.personnes,10)||4),
+      ing:o.ingredients.map(aiLine).filter(Boolean),
+      steps:(Array.isArray(o.etapes)?o.etapes:[]).map(aiLine).map(function(s){return s.replace(/^\s*\d+\s*[.)\-:]\s*/,"");}).filter(Boolean)
+    };
+    aiDetailCache[name]=d;aiS.detail=d;aiS.dLoading=false;aiRender();
+  }).catch(function(e){
+    if(my!==aiS.req)return;
+    aiS.dLoading=false;aiS.err=e.message||"Erreur";aiRender();
+  });
+}
+
+function aiUse(){
+  var d=aiS.detail;if(!d)return;
+  document.getElementById("f-name").value=d.nom;
+  document.getElementById("f-ing").value=d.ing.join("\n");
+  document.getElementById("f-steps").value=d.steps.map(function(s,i){return (i+1)+". "+s;}).join("\n");
+  document.getElementById("f-base").value=d.personnes;
+  saveDraft();aiClose();toast("Recette ajoutée au formulaire");
+}
+function aiAddToMenu(day,slot){
+  var d=aiS.detail;if(!d)return;
+  var k=day+"-"+slot;
+  if(state.meals[k]&&!confirm("Ce créneau est déjà rempli. Le remplacer ?"))return;
+  state.meals[k]={name:d.nom,ing:d.ing.join("\n"),steps:d.steps.map(function(s,i){return (i+1)+". "+s;}).join("\n"),base:d.personnes,people:state.people||2};
+  save();aiClose();go("week");toast("Repas ajouté au menu");
+}
+
+function aiRender(){
+  aiPanel.replaceChildren();
+  var h=el("h3","","AI Hub · recettes");aiPanel.appendChild(h);
+
+  /* ----- vue détail ----- */
+  if(aiS.inDetail){
+    var back=el("button","back","‹ Retour aux recettes");back.type="button";
+    back.addEventListener("click",function(){aiS.req++;aiS.detail=null;aiS.dLoading=false;aiS.err="";aiS.inDetail=false;aiRender();});
+    aiPanel.appendChild(back);
+    if(aiS.dLoading){aiPanel.appendChild(el("p","note","Je prépare la recette « "+aiS.dName+" »…"));return;}
+    if(aiS.err||!aiS.detail){
+      aiPanel.appendChild(el("p","note","Impossible : "+(aiS.err||"recette introuvable")));
+      var rt=el("button","btn main","Réessayer");rt.type="button";rt.addEventListener("click",function(){aiDetail(aiS.dName);});aiPanel.appendChild(rt);
+      return;
+    }
+    var d=aiS.detail;
+    aiPanel.appendChild(el("h3","",d.nom));
+    aiPanel.appendChild(el("p","hint","Pour "+d.personnes+" personnes"));
+    aiPanel.appendChild(el("h2","aisle","Ingrédients"));
+    d.ing.forEach(function(x){aiPanel.appendChild(el("div","ingl",x));});
+    aiPanel.appendChild(el("h2","aisle","Étapes"));
+    var ol=el("ol","steps");d.steps.forEach(function(s){ol.appendChild(el("li","",s));});aiPanel.appendChild(ol);
+
+    var acts=el("div","acts");acts.style.flexDirection="column";
+    if(aiS.ctx==="sheet"){
+      var u=el("button","btn main","Utiliser cette recette");u.type="button";u.addEventListener("click",aiUse);acts.appendChild(u);
+    }else{
+      var f=nextFree({});
+      var row=el("div","assign");
+      var sd=sel("",DAYS.map(function(x,i){return [i,x];}),f.day,"Jour",function(){});
+      var ss=sel("",SLOTS,f.slot,"Repas",function(){});
+      row.appendChild(sd);row.appendChild(ss);acts.appendChild(row);
+      var a=el("button","btn main","Ajouter au menu");a.type="button";
+      a.addEventListener("click",function(){aiAddToMenu(+sd.value,ss.value);});acts.appendChild(a);
+    }
+    aiPanel.appendChild(acts);
+    return;
+  }
+
+  /* ----- vue recherche ----- */
+  var lab=el("label","","Plat ou ingrédients");lab.htmlFor="ai-q";lab.style.marginTop="0";
+  var inp=document.createElement("input");inp.type="text";inp.id="ai-q";inp.value=aiS.q;inp.placeholder="Ex. : poulet, riz, courgette";inp.autocomplete="off";
+  inp.addEventListener("input",function(){aiS.q=inp.value;});
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();aiSearch();}});
+  aiPanel.appendChild(lab);aiPanel.appendChild(inp);
+  var bar=el("div","bar");bar.style.marginTop="10px";
+  var go1=el("button","btn main","Chercher");go1.type="button";go1.addEventListener("click",aiSearch);
+  var cl=el("button","btn","Fermer");cl.type="button";cl.addEventListener("click",aiClose);
+  bar.appendChild(go1);bar.appendChild(cl);aiPanel.appendChild(bar);
+
+  if(aiS.loading){aiPanel.appendChild(el("p","note","L’IA cherche des recettes…"));return;}
+  if(aiS.err){
+    aiPanel.appendChild(el("p","note","Impossible : "+aiS.err));
+    return;
+  }
+  if(!aiS.list)return;
+  aiPanel.appendChild(el("h2","aisle",aiS.list.length+" recettes proposées"));
+  aiS.list.forEach(function(r){
+    var b=el("button","rec");b.type="button";
+    b.appendChild(el("strong","",r.nom));
+    var sub=[r.temps,r.description].filter(Boolean).join(" · ");
+    if(sub)b.appendChild(el("small","",sub));
+    b.addEventListener("click",function(){aiS.inDetail=true;aiDetail(r.nom);});
+    aiPanel.appendChild(b);
+  });
+}
+document.getElementById("f-ai").addEventListener("click",function(){
+  aiOpen("sheet",document.getElementById("f-name").value.trim());
+});
+
+/* --- Web Share Target --- */
 function checkSharedTarget() {
   const params = new URLSearchParams(window.location.search);
-  // Si l'app est ouverte via le partage
   if (params.get('share') === 'true') {
     let sharedUrl = params.get('url') || params.get('text') || '';
-    // On nettoie l'URL au cas où il y a du texte autour
     const match = sharedUrl.match(/https?:\/\/[^\s]+/);
     if (match) sharedUrl = match[0];
 
     if (sharedUrl && sharedUrl.includes('marmiton.org')) {
-      // On va sur la page des repas (pour avoir le contexte)
       go("week");
-      
-      // On ouvre la modale sur le premier créneau vide (Lundi Midi par défaut)
       setTimeout(() => {
-        openSheet("0-m", "Lundi, midi"); 
-        
-        // On remplit l'URL et on lance l'import
+        openSheet("0-m", "Lundi, midi");
         document.getElementById("f-url").value = sharedUrl;
         document.getElementById("f-import").click();
       }, 100);
@@ -613,8 +849,21 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
 }
 
+/* --- Restauration du brouillon au lancement --- */
+try{
+  var dr=JSON.parse(localStorage.getItem(DKEY)||"null");
+  if(dr&&dr.key){
+    openSheet(dr.key,dr.title);
+    document.getElementById("f-name").value=dr.name;
+    document.getElementById("f-url").value=dr.url;
+    document.getElementById("f-ing").value=dr.ing;
+    document.getElementById("f-steps").value=dr.steps||"";
+    document.getElementById("f-base").value=dr.base;
+    document.getElementById("f-ppl").value=dr.ppl;
+  }
+}catch(e){}
+
 route();
-// Appel de la vérification après le chargement initial
 setTimeout(checkSharedTarget, 100);
 </script>
 </body>
