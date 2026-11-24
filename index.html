@@ -67,9 +67,9 @@ h1{font-size:28px;font-weight:800;margin:8px 0 14px;letter-spacing:-.02em}
 #sheet,#aisheet{position:fixed;inset:0;background:rgba(10,16,22,0);display:flex;align-items:flex-end;z-index:20;pointer-events:none;transition:background .25s}
 #sheet.open,#aisheet.open{background:rgba(10,16,22,.55);pointer-events:auto}
 #aisheet{z-index:25}
-#sheet form,#sheet .panel,#aisheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+#sheet form,#sheet .panel,#aisheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:0;transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
 #sheet.open form,#sheet.open .panel,#aisheet.open .panel{transform:translateY(0)}
-#aisheet .panel{max-height:92vh;min-height:60vh;overflow:auto}
+#aisheet .panel{display:flex;flex-direction:column;height:88vh;height:88dvh;max-height:92vh;overflow:hidden}
 #sheet h3,#aisheet h3{margin:0 0 12px;font-size:20px;font-weight:800}
 label{display:block;font-weight:600;font-size:14px;margin:10px 0 4px}
 input[type=text],input[type=number],textarea,select{width:100%;font:inherit;font-size:16px;font-family:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -78,7 +78,7 @@ textarea{min-height:130px;resize:vertical}
 .acts{display:flex;gap:8px;margin-top:14px}
 .sug{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:30vh;overflow:auto}
 .sug .btn{text-align:left;font-weight:400}
-#sheet form{max-height:92vh;overflow:auto}
+#sheet form{display:flex;flex-direction:column;max-height:92vh;overflow:hidden}
 .rec{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--ink);font:inherit;font-family:inherit;cursor:pointer}
 .rec:active{transform:scale(.99)}
 .rec strong{display:block;font-weight:800}
@@ -96,6 +96,37 @@ textarea{min-height:130px;resize:vertical}
 .stat{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
 .stat strong{display:block;font-size:22px;font-weight:800}
 .stat span{font-size:13px;color:var(--mute)}
+
+/* ---------- Polish v4 : gros boutons, cartes, fluidité ---------- */
+*{-webkit-tap-highlight-color:transparent}
+button,.row,.tile,.slot,select{touch-action:manipulation}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#view.enter{animation:rise .22s ease both}
+@media (prefers-reduced-motion:reduce){#view.enter{animation:none}}
+h1{font-size:30px}
+.btn{min-height:50px;padding:13px 14px;border-radius:14px;font-size:16px}
+.back{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px 8px 10px;margin:0 0 4px -10px;font-size:17px;border-radius:12px}
+.back:active{background:var(--surface)}
+.tabs button{min-height:44px}
+.day,.row,.idea,.stat,.tile,.rec{box-shadow:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.04)}
+.slot{padding:15px 14px}
+.row{min-height:56px}
+.tile{padding:20px}
+.grab{flex:none;width:44px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 6px}
+.sh-body{flex:1;min-height:0;overflow:auto;padding:4px 16px 14px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.sh-foot{flex:none;margin:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.sh-foot .btn{min-height:56px;font-size:17px;border-radius:16px}
+.sh-foot .btn.main{flex:1.6}
+.sh-foot .btn.warn{flex:.8}
+.mhead{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-family:inherit;padding:14px;min-height:64px;cursor:pointer}
+.mhead .mt{flex:1;min-width:0}
+.mhead .mt b{display:block;font-weight:800;font-size:17px}
+.mhead small{display:block;color:var(--mute);font-size:13px}
+.mhead .chev{flex:none;color:var(--mute);font-size:24px;transition:transform .2s}
+.mcard.open .chev{transform:rotate(90deg)}
+.mbody{border-top:1px solid var(--line);padding:12px 12px 6px}
+.mbody .row{box-shadow:none}
+.mbody .btn{width:100%;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -104,6 +135,8 @@ textarea{min-height:130px;resize:vertical}
 
 <div id="sheet" aria-hidden="true">
   <form id="form">
+    <div class="grab"></div>
+    <div class="sh-body">
     <h3 id="sh-title"></h3>
     <label for="f-name">Repas</label>
     <input type="text" id="f-name" placeholder="Ex. : pâtes à la tomate" autocomplete="off">
@@ -125,14 +158,15 @@ textarea{min-height:130px;resize:vertical}
       <div style="flex:1"><label for="f-ppl" style="margin-top:0">Je cuisine pour</label><input type="number" id="f-ppl" min="1" max="99" inputmode="numeric"></div>
     </div>
     <p class="hint">Quantité d’abord, puis l’ingrédient. Les doublons s’additionnent dans la liste de courses.</p>
-    <div class="acts">
+    </div>
+    <div class="acts sh-foot">
       <button type="button" class="btn warn" id="f-clear">Vider</button>
       <button type="button" class="btn" id="f-cancel">Fermer</button>
       <button type="submit" class="btn main">Enregistrer</button>
     </div>
   </form>
 </div>
-<div id="aisheet" aria-hidden="true"><div class="panel" id="ai-panel"></div></div>
+<div id="aisheet" aria-hidden="true"><div class="panel"><div class="grab"></div><div id="ai-panel" class="sh-body"></div><div id="ai-foot" class="acts sh-foot" hidden></div></div></div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -203,6 +237,7 @@ function fmt(it){
   if(u==="ml"&&q>=1000){q=q/1000;u="l";}
   q=Math.round(q*100)/100;
   var s=String(q).replace(".",",");
+  if(u&&!/^(de |d’|d')/i.test(it.name))return s+" "+u+" "+(/^(h(?!aricot|achis|omard|arissa|alloumi|oumous|ot)|[aeiouyàâäéèêëîïôöùûü])/i.test(it.name)?"d’":"de ")+it.name;
   return s+(u?" "+u:"")+" "+it.name;
 }
 
@@ -227,10 +262,82 @@ function aisle(n){
   return AISLES[6];
 }
 
+var openMeals={};
+function parseLine(line){
+  line=line.trim();var q=null,u="",n=line,r=RX.exec(line);
+  if(r){q=toNum(r[1]);u=(r[2]||"").toLowerCase();n=r[3].trim();}
+  if(u==="kg"){q*=1000;u="g";}else if(u==="l"){q*=1000;u="ml";}else if(u==="cl"){q*=10;u="ml";}
+  return {id:n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")+"|"+u,name:n,unit:u,q:q};
+}
+function syncChecks(id){
+  var on=!!state.checked[id];
+  Array.prototype.forEach.call(view.querySelectorAll(".row"),function(r){
+    if(r.dataset.id===id){r.classList.toggle("done",on);var c=r.querySelector("input");if(c)c.checked=on;}
+  });
+  Array.prototype.forEach.call(view.querySelectorAll(".mcard"),function(c){if(c._upd)c._upd();});
+}
+function ingRow(id,text){
+  var row=el("label","row"+(state.checked[id]?" done":""));row.dataset.id=id;
+  var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state.checked[id];
+  cb.addEventListener("change",function(){
+    if(cb.checked)state.checked[id]=1;else delete state.checked[id];
+    save();syncChecks(id);
+  });
+  row.appendChild(cb);row.appendChild(el("span","",text));return row;
+}
+function mealEntries(){
+  var out=[];
+  for(var d=0;d<7;d++){["p","m","s"].forEach(function(sl,si){
+    var k=d+"-"+sl,m=state.meals[k];if(m&&m.name)out.push({key:k,m:m,day:d,slot:si});
+  });}
+  return out;
+}
+function renderListMeals(){
+  var ents=mealEntries();
+  if(!ents.length){view.appendChild(el("p","note","Aucun repas planifié."));return;}
+  ents.forEach(function(e){
+    var m=e.m,f=(m.people&&m.base)?m.people/m.base:1;
+    var lines=(m.ing||"").split("\n").map(function(l){return l.trim();}).filter(Boolean).map(function(l){
+      var p=parseLine(l);
+      return {id:p.id,text:p.q==null?l:fmt({qty:p.q*f,unit:p.unit,name:p.name})};
+    });
+    var card=el("section","day mcard"+(openMeals[e.key]?" open":""));
+    var head=el("button","mhead");head.type="button";
+    var mt=el("span","mt");
+    mt.appendChild(el("small","",DAYS[e.day]+" · "+SLOTS[e.slot][1]));
+    mt.appendChild(el("b","",m.name));
+    var cnt=el("small","");mt.appendChild(cnt);
+    head.appendChild(mt);head.appendChild(el("span","chev","›"));
+    card.appendChild(head);
+    var body=el("div","mbody");body.hidden=!openMeals[e.key];
+    function upd(){
+      var n=lines.filter(function(l){return state.checked[l.id];}).length;
+      cnt.textContent=lines.length?(n+"/"+lines.length+" cochés"):"Aucun ingrédient";
+    }
+    card._upd=upd;upd();
+    head.addEventListener("click",function(){
+      var o=!openMeals[e.key];openMeals[e.key]=o;body.hidden=!o;card.classList.toggle("open",o);
+    });
+    lines.forEach(function(l){body.appendChild(ingRow(l.id,l.text));});
+    if(m.steps&&m.steps.trim()){
+      var vb=el("button","btn","Voir la recette");vb.type="button";
+      vb.addEventListener("click",function(){aiOpenMeal(e.key);});body.appendChild(vb);
+    }
+    card.appendChild(body);view.appendChild(card);
+  });
+}
 function renderList(){
   view.replaceChildren();
   var items=buildList();
   if(!items.length){view.appendChild(el("p","note","Ajoute des ingrédients à tes repas : la liste se remplit toute seule."));return;}
+  var mode=state.listMode==="meal"?"meal":"aisle";
+  var tabs=el("div","tabs");tabs.setAttribute("role","tablist");
+  [["aisle","Par rayon"],["meal","Par repas"]].forEach(function(x){
+    var b=el("button","",x[1]);b.type="button";b.setAttribute("aria-selected",String(mode===x[0]));
+    b.addEventListener("click",function(){state.listMode=x[0];save();renderList();});
+    tabs.appendChild(b);
+  });
+  view.appendChild(tabs);
   var bar=el("div","bar");
   var c=el("button","btn main","Copier la liste");c.type="button";
   var all=el("button","btn","Tout cocher");all.type="button";
@@ -239,16 +346,13 @@ function renderList(){
   all.addEventListener("click",function(){items.forEach(function(it){state.checked[it.id]=1;});save();renderList();});
   r.addEventListener("click",function(){state.checked={};save();renderList();});
   bar.appendChild(c);bar.appendChild(all);bar.appendChild(r);view.appendChild(bar);
+  if(mode==="meal"){renderListMeals();return;}
 
   var last="";
   items.sort(function(a,b){var x=aisle(a.name),y=aisle(b.name);return x!==y?AISLES.indexOf(x)-AISLES.indexOf(y):a.name.localeCompare(b.name,"fr");});
   items.forEach(function(it){
     var ay=aisle(it.name);if(ay!==last){view.appendChild(el("h2","aisle",ay));last=ay;}
-    var row=el("label","row"+(state.checked[it.id]?" done":""));
-    var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state.checked[it.id];
-    cb.addEventListener("change",function(){if(cb.checked)state.checked[it.id]=1;else delete state.checked[it.id];save();row.classList.toggle("done",cb.checked);});
-    row.appendChild(cb);row.appendChild(el("span","",fmt(it)));
-    view.appendChild(row);
+    view.appendChild(ingRow(it.id,fmt(it)));
   });
 }
 function copyList(){
@@ -275,7 +379,7 @@ function openSheet(key,title){
   document.getElementById("f-ppl").value=pp;
   document.getElementById("f-base").value=m.base||pp;
   sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
-  setTimeout(function(){document.getElementById("f-name").focus();},50);
+  if(!m.name)setTimeout(function(){document.getElementById("f-name").focus();},50);
 }
 function closeSheet(){
   sheet.classList.remove("open");sheet.setAttribute("aria-hidden","true");
@@ -533,7 +637,7 @@ var ICONS={
  list:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18h36l-4 20a3 3 0 0 1-3 2.5H13a3 3 0 0 1-3-2.5L6 18z"/><path d="M16 18l6-10M32 18l-6-10M19 26v8M29 26v8"/></svg>'
 };
 function go(t){location.hash={home:"",week:"repas",idea:"idees",list:"courses"}[t];}
-function route(){tab=ROUTES[location.hash.replace("#","")]||"home";render();window.scrollTo(0,0);}
+function route(){tab=ROUTES[location.hash.replace("#","")]||"home";render();window.scrollTo(0,0);view.classList.remove("enter");void view.offsetWidth;view.classList.add("enter");}
 window.addEventListener("hashchange",route);
 
 function render(){
@@ -651,7 +755,7 @@ document.getElementById("f-paste").addEventListener("click", async function(){
 
 
 /* ============================================================
-   CATÉGORIES + PASSERELLE AI HUB
+   CATÉGORIES + PASSERELLE AI HUB (v4 : rapide, par flux)
    ============================================================ */
 var CATS=["Entrée","Plat","Dessert"],CATPL={"Entrée":"Entrées","Plat":"Plats","Dessert":"Desserts"};
 function catOfName(n){
@@ -679,123 +783,211 @@ function scaledLine(line,f){
 }
 
 var AI_PROXY="https://ai-hub-proxy.pasquet-gregory.workers.dev";
-var aiS={ctx:"sheet",view:"search",q:"",loading:false,err:"",list:null,detail:null,inDetail:false,dLoading:false,dName:"",dCat:"",mealKey:null,req:0};
-var aiListCache={},aiDetailCache={},aiSeen={};
-var aiSheet=document.getElementById("aisheet"),aiPanel=document.getElementById("ai-panel");
+var AI_MODE="auto"; /* pour comparer la vitesse, essaie "gemini", "gemma" ou "ernie" */
+var aiS={ctx:"sheet",view:"search",q:"",items:[],running:0,catErr:{},err:"",detail:null,inDetail:false,dLoading:false,dName:"",dCat:"",mealKey:null,rl:0,rd:0,lctls:[],dctls:[]};
+var aiListCache={},aiDetailCache={},aiSeen={},aiRT=null,aiDaySel=null,aiSlotSel=null;
+var aiSheet=document.getElementById("aisheet"),aiPanel=document.getElementById("ai-panel"),aiFoot=document.getElementById("ai-foot");
 
-function aiAsk(prompt){
-  var ctl=new AbortController(),t=setTimeout(function(){ctl.abort();},70000);
+function aiAbort(bucket){bucket.splice(0).forEach(function(c){try{c.abort();}catch(e){}});}
+
+/* Appel au proxy en flux : onText reçoit le texte au fur et à mesure */
+function aiStream(prompt,onText,bucket){
+  var ctl=new AbortController();bucket.push(ctl);
+  var t=setTimeout(function(){ctl.abort();},70000);
+  function done(){clearTimeout(t);var i=bucket.indexOf(ctl);if(i>-1)bucket.splice(i,1);}
   return fetch(AI_PROXY,{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({mode:"auto",messages:[{role:"user",content:prompt}],stream:true}),signal:ctl.signal})
+    body:JSON.stringify({mode:AI_MODE,messages:[{role:"user",content:prompt}],stream:true}),signal:ctl.signal})
   .then(function(r){
     if(!r.ok)return r.text().then(function(x){throw new Error("HTTP "+r.status+" "+x.slice(0,120));});
-    return r.text();
-  }).then(function(raw){
-    clearTimeout(t);
-    var out="";
-    raw.split("\n").forEach(function(line){
+    var acc="",raw="",buf="";
+    function eat(line){
       var l=line.trim();if(l.indexOf("data:")!==0)return;
-      var d=l.slice(5).trim();if(d==="[DONE]")return;
-      try{var j=JSON.parse(d);var c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;if(c)out+=c;}catch(e){}
-    });
-    if(!out){
-      try{var j2=JSON.parse(raw);out=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||"";}catch(e){}
+      var d=l.slice(5).trim();if(!d||d==="[DONE]")return;
+      try{var j=JSON.parse(d);var c=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;if(c){acc+=c;if(onText)onText(acc);}}catch(e){}
     }
-    if(!out)throw new Error("Réponse vide");
-    return out;
-  }).catch(function(e){
-    clearTimeout(t);
-    throw new Error(e&&e.name==="AbortError"?"Délai dépassé":(e&&e.message)||"Réseau");
-  });
+    function fin(){
+      if(!acc){try{var j2=JSON.parse(raw);acc=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||"";if(acc&&onText)onText(acc);}catch(e){}}
+      if(!acc)throw new Error("Réponse vide");
+      return acc;
+    }
+    if(!r.body||!r.body.getReader)return r.text().then(function(x){raw=x;x.split("\n").forEach(eat);return fin();});
+    var rd=r.body.getReader(),dec=new TextDecoder();
+    function pump(){
+      return rd.read().then(function(res){
+        if(res.done){if(buf)eat(buf);return fin();}
+        var chunk=dec.decode(res.value,{stream:true});raw+=chunk;buf+=chunk;
+        var lines=buf.split("\n");buf=lines.pop();lines.forEach(eat);
+        return pump();
+      });
+    }
+    return pump();
+  }).then(function(x){done();return x;},function(e){done();throw new Error(e&&e.name==="AbortError"?"Délai dépassé":(e&&e.message)||"Réseau");});
 }
-function aiJSON(text,open,close){
-  text=String(text).replace(/<think>[\s\S]*?<\/think>/gi,"").replace(/```json|```/gi,"");
-  var a=text.indexOf(open),b=text.lastIndexOf(close);
-  if(a<0||b<=a)return null;
-  try{return JSON.parse(text.slice(a,b+1));}catch(e){return null;}
+function aiClean(text){return String(text).replace(/<think>[\s\S]*?(?:<\/think>|$)/gi,"").replace(/```json|```/gi,"");}
+/* objets { } complets d'un tableau JSON en cours d'arrivée */
+function aiObjs(text){
+  text=aiClean(text);
+  var i=text.indexOf("[");if(i<0)return [];
+  var out=[],depth=0,start=-1,inStr=false,esc=false;
+  for(var k=i+1;k<text.length;k++){
+    var c=text[k];
+    if(inStr){if(esc)esc=false;else if(c==="\\")esc=true;else if(c==='"')inStr=false;continue;}
+    if(c==='"'){inStr=true;continue;}
+    if(c==="{"){if(depth===0)start=k;depth++;}
+    else if(c==="}"){depth--;if(depth===0&&start>=0){try{out.push(JSON.parse(text.slice(start,k+1)));}catch(e){}start=-1;}}
+  }
+  return out;
+}
+/* tableau complet d'une clé ("ingredients", "etapes") dans un JSON en cours d'arrivée */
+function aiArr(text,key){
+  text=aiClean(text);
+  var k=text.indexOf('"'+key+'"');if(k<0)return null;
+  var i=text.indexOf("[",k);if(i<0)return null;
+  var depth=0,inStr=false,esc=false;
+  for(var j=i;j<text.length;j++){
+    var c=text[j];
+    if(inStr){if(esc)esc=false;else if(c==="\\")esc=true;else if(c==='"')inStr=false;continue;}
+    if(c==='"'){inStr=true;continue;}
+    if(c==="[")depth++;
+    else if(c==="]"){depth--;if(depth===0){try{return JSON.parse(text.slice(i,j+1));}catch(e){return null;}}}
+  }
+  return null;
 }
 function aiLine(x){
   if(typeof x==="string")return x.trim();
   if(x&&typeof x==="object")return Object.keys(x).map(function(k){return x[k];}).join(" ").trim();
   return "";
 }
+function aiTypeOf(q){
+  var s=q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  if(/\bdesserts?\b/.test(s))return "Dessert";
+  if(/\bentrees?\b/.test(s))return "Entrée";
+  if(/\bplats?\b/.test(s))return "Plat";
+  return "";
+}
+function aiListPrompt(q,cat,n,seen){
+  var what=cat==="Entrée"?"entrées":cat==="Dessert"?"desserts":"plats principaux";
+  return "Propose "+n+" idées de "+what+" pour cette demande : « "+q+" » (un nom de plat ou des ingrédients disponibles). "+
+    "Recettes variées et faciles. Pour une entrée ou un dessert, tu peux t’éloigner des ingrédients cités et proposer des classiques populaires. "+
+    (seen.length?"Ne propose surtout pas : "+seen.slice(-45).join(", ")+". ":"")+
+    "Réponds UNIQUEMENT avec un tableau JSON, sans texte autour ni markdown : "+
+    '[{"nom":"Nom","description":"6 mots maximum","temps":"30 min"}]';
+}
 
 function aiShow(){aiSheet.classList.add("open");aiSheet.setAttribute("aria-hidden","false");aiPanel.scrollTop=0;}
 function aiOpen(ctx,q){
-  aiS.ctx=ctx;aiS.view="search";aiS.q=q||"";aiS.err="";aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.loading=false;
-  aiS.list=aiListCache[aiS.q.trim().toLowerCase()]||null;
+  aiAbort(aiS.lctls);aiAbort(aiS.dctls);aiS.rl++;aiS.rd++;
+  aiS.ctx=ctx;aiS.view="search";aiS.q=q||"";aiS.err="";aiS.catErr={};aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.running=0;
+  aiS.items=(aiListCache[aiS.q.trim().toLowerCase()]||[]).slice();
   aiShow();aiRender();
-  if(aiS.q.trim()&&!aiS.list)aiSearch(false);
+  if(aiS.q.trim()&&!aiS.items.length)aiSearch(false);
 }
 function aiOpenMeal(key){aiS.view="meal";aiS.mealKey=key;aiS.inDetail=false;aiShow();aiRender();}
-function aiClose(){aiSheet.classList.remove("open");aiSheet.setAttribute("aria-hidden","true");aiS.req++;}
+function aiClose(){
+  aiAbort(aiS.lctls);aiAbort(aiS.dctls);aiS.rl++;aiS.rd++;aiS.running=0;
+  aiSheet.classList.remove("open");aiSheet.setAttribute("aria-hidden","true");
+}
+function aiBack(){aiAbort(aiS.dctls);aiS.rd++;aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.err="";aiRender();}
+function aiResultsSoon(){if(aiRT)return;aiRT=setTimeout(function(){aiRT=null;aiRenderResults();},120);}
 
-function aiSearch(more){
+/* 3 requêtes en parallèle (entrées, plats, desserts) : les résultats s'affichent dès qu'ils arrivent */
+function aiSearch(more,cats){
   var q=aiS.q.trim();
   if(!q){toast("Saisis un plat ou des ingrédients");return;}
-  var key=q.toLowerCase(),my=++aiS.req,prev=aiS.list;
-  var seen=more?(aiSeen[key]||[]):[];
-  aiS.inDetail=false;aiS.loading=true;aiS.err="";aiS.list=null;aiS.detail=null;aiRender();
-  var prompt="Propose des recettes de cuisine pour cette demande : « "+q+" » (un nom de plat ou des ingrédients disponibles). "+
-    "Propose 5 entrées, 5 plats principaux et 5 desserts, tous différents. Si la demande précise déjà un type (entrée, plat ou dessert), propose seulement 12 recettes de ce type. "+
-    (seen.length?"Ne propose surtout pas ces recettes déjà vues : "+seen.slice(-45).join(", ")+". ":"")+
-    "Réponds UNIQUEMENT avec un tableau JSON, sans texte autour ni markdown, au format : "+
-    '[{"nom":"Nom de la recette","categorie":"Plat","description":"une phrase courte","temps":"30 min"}] '+
-    "(categorie vaut Entrée, Plat ou Dessert).";
-  function attempt(n){
-    return aiAsk(prompt).then(function(txt){
-      var arr=aiJSON(txt,"[","]");
-      if(Array.isArray(arr)&&arr.length)return arr;
-      if(n<1)return attempt(n+1);
-      throw new Error("Réponse illisible, réessaie");
-    });
+  var key=q.toLowerCase();
+  aiAbort(aiS.lctls);
+  var my=++aiS.rl;
+  var typed=aiTypeOf(q),plan=cats||(typed?[typed]:CATS.slice()),per=typed?10:5;
+  var prev=aiS.items.slice(),added=[];
+  var seen=(more||cats)?(aiSeen[key]||[]):[];
+  if(!cats){aiS.items=[];aiS.catErr={};}else cats.forEach(function(c){delete aiS.catErr[c];});
+  aiS.inDetail=false;aiS.err="";aiS.detail=null;aiS.running=plan.length;
+  aiRender();
+
+  function addItem(o,cat){
+    if(!o)return;
+    var nom=String(o.nom||o.name||o.titre||"").trim();if(!nom)return;
+    var low=nom.toLowerCase();
+    if(aiS.items.some(function(x){return x.cat===cat&&x.nom.toLowerCase()===low;}))return;
+    aiS.items.push({nom:nom,cat:cat,description:String(o.description||"").trim(),temps:String(o.temps||"").trim()});
+    added.push(nom);
   }
-  attempt(0).then(function(arr){
-    if(my!==aiS.req)return;
-    var list=arr.map(function(r){
-      if(typeof r==="string")r={nom:r};
-      var nom=String(r.nom||r.name||r.titre||"").trim();
-      return {nom:nom,cat:normCat(r.categorie||r.category,nom),description:String(r.description||"").trim(),temps:String(r.temps||"").trim()};
-    }).filter(function(r){return r.nom;}).slice(0,18);
-    if(!list.length)throw new Error("Aucune recette trouvée");
-    aiListCache[key]=list;aiSeen[key]=seen.concat(list.map(function(r){return r.nom;}));
-    aiS.list=list;aiS.loading=false;aiRender();aiPanel.scrollTop=0;
-  }).catch(function(e){
-    if(my!==aiS.req)return;
-    aiS.loading=false;
-    if(more&&prev){aiS.list=prev;aiRender();toast("Impossible de générer d’autres recettes");return;}
-    aiS.err=e.message||"Erreur";aiRender();
+  function finish(){
+    if(!aiS.items.length&&more&&prev.length){aiS.items=prev;aiS.catErr={};toast("Impossible de générer d’autres recettes");}
+    else if(aiS.items.length)aiListCache[key]=aiS.items.slice();
+    aiSeen[key]=seen.concat(added);
+    aiRenderResults();aiRenderFoot();
+  }
+  plan.forEach(function(cat){
+    var shown=0,tried=0;
+    function once(){
+      tried++;
+      return aiStream(aiListPrompt(q,cat,per,seen),function(txt){
+        if(my!==aiS.rl)return;
+        var objs=aiObjs(txt);
+        for(;shown<objs.length;shown++)addItem(objs[shown],cat);
+        aiResultsSoon();
+      },aiS.lctls).then(function(txt){
+        if(my!==aiS.rl)return;
+        var objs=aiObjs(txt);
+        for(;shown<objs.length;shown++)addItem(objs[shown],cat);
+        if(!shown)throw new Error("Réponse illisible");
+      }).catch(function(e){
+        if(my!==aiS.rl)return;
+        if(!shown&&tried<2)return once();
+        throw e;
+      });
+    }
+    once().catch(function(e){
+      if(my!==aiS.rl)return;
+      aiS.catErr[cat]=e.message||"Erreur";
+    }).then(function(){
+      if(my!==aiS.rl)return;
+      aiS.running--;
+      if(aiS.running<=0){aiS.running=0;finish();}else aiResultsSoon();
+    });
   });
 }
 
+/* détail : les ingrédients s'affichent dès qu'ils arrivent, puis les étapes */
 function aiDetail(name,cat){
-  var my=++aiS.req;aiS.dName=name;aiS.dCat=cat||"";
-  if(aiDetailCache[name]){aiS.detail=aiDetailCache[name];aiS.dLoading=false;aiS.err="";aiRender();return;}
-  aiS.dLoading=true;aiS.err="";aiS.detail=null;aiRender();
-  var prompt="Donne la recette « "+name+" » pour 4 personnes. Réponds UNIQUEMENT avec un objet JSON, sans texte autour ni markdown, au format : "+
-    '{"nom":"…","personnes":4,"ingredients":["400 g de pâtes","3 tomates","1 oignon"],"etapes":["Première étape…","Deuxième étape…"]}. '+
-    "Chaque ingrédient sur une chaîne, la quantité d'abord puis l'ingrédient, avec les unités g, kg, ml, cl ou l.";
-  function attempt(n){
-    return aiAsk(prompt).then(function(txt){
-      var o=aiJSON(txt,"{","}");
-      if(o&&Array.isArray(o.ingredients)&&o.ingredients.length)return o;
-      if(n<1)return attempt(n+1);
-      throw new Error("Recette illisible, réessaie");
+  aiAbort(aiS.dctls);
+  var my=++aiS.rd;aiS.dName=name;aiS.dCat=cat||"";aiS.err="";
+  if(aiDetailCache[name]){aiS.detail=aiDetailCache[name];aiS.dLoading=false;aiRender();return;}
+  aiS.dLoading=true;aiS.detail=null;aiRender();
+  var prompt="Donne la recette « "+name+" » pour 4 personnes. Réponds UNIQUEMENT avec un objet JSON, sans texte autour ni markdown, dans cet ordre : "+
+    '{"personnes":4,"ingredients":["400 g de pâtes","3 tomates","1 oignon"],"etapes":["Première étape","Deuxième étape"]}. '+
+    "Chaque ingrédient sur une chaîne, la quantité d’abord puis l’ingrédient, avec les unités g, kg, ml, cl ou l. Étapes courtes (une phrase), 8 au maximum.";
+  function build(txt){
+    var ing=aiArr(txt,"ingredients");if(!ing||!ing.length)return null;
+    var st=aiArr(txt,"etapes"),pm=/"personnes"\s*:\s*"?(\d+)/.exec(txt);
+    return {nom:name,cat:normCat(cat,name),personnes:Math.max(1,pm?parseInt(pm[1],10):4),
+      ing:ing.map(aiLine).filter(Boolean),
+      steps:(st||[]).map(aiLine).map(function(x){return x.replace(/^\s*\d+\s*[.)\-:]\s*/,"");}).filter(Boolean),
+      partial:!st};
+  }
+  var tried=0;
+  function once(){
+    tried++;
+    return aiStream(prompt,function(txt){
+      if(my!==aiS.rd)return;
+      var d=build(txt);if(!d)return;
+      var c=aiS.detail;
+      if(!c||c.ing.length!==d.ing.length||c.steps.length!==d.steps.length||c.partial!==d.partial){
+        aiS.detail=d;aiS.dLoading=false;aiRender(true);
+      }
+    },aiS.dctls).then(function(txt){
+      if(my!==aiS.rd)return;
+      var d=build(txt);if(!d)throw new Error("Recette illisible, réessaie");
+      d.partial=false;aiDetailCache[name]=d;aiS.detail=d;aiS.dLoading=false;aiRender(true);
+    }).catch(function(e){
+      if(my!==aiS.rd)return;
+      if(!aiS.detail&&tried<2)return once();
+      throw e;
     });
   }
-  attempt(0).then(function(o){
-    if(my!==aiS.req)return;
-    var nom=String(o.nom||name).trim()||name;
-    var d={
-      nom:nom,
-      cat:normCat(cat,nom),
-      personnes:Math.max(1,parseInt(o.personnes,10)||4),
-      ing:o.ingredients.map(aiLine).filter(Boolean),
-      steps:(Array.isArray(o.etapes)?o.etapes:[]).map(aiLine).map(function(x){return x.replace(/^\s*\d+\s*[.)\-:]\s*/,"");}).filter(Boolean)
-    };
-    aiDetailCache[name]=d;aiS.detail=d;aiS.dLoading=false;aiRender();
-  }).catch(function(e){
-    if(my!==aiS.req)return;
+  once().catch(function(e){
+    if(my!==aiS.rd)return;
     aiS.dLoading=false;aiS.err=e.message||"Erreur";aiRender();
   });
 }
@@ -804,7 +996,7 @@ function isFav(nom){return state.favs.some(function(f){return f.nom===nom;});}
 function toggleFav(d){
   if(isFav(d.nom))state.favs=state.favs.filter(function(f){return f.nom!==d.nom;});
   else state.favs.push({nom:d.nom,cat:d.cat||catOfName(d.nom),personnes:d.personnes,ing:d.ing.slice(),steps:d.steps.slice()});
-  save();aiRender();
+  save();aiRender(true);
 }
 function stepsText(d){return d.steps.map(function(x,i){return (i+1)+". "+x;}).join("\n");}
 function aiUse(){
@@ -822,31 +1014,55 @@ function aiAddToMenu(day,slot){
   state.meals[k]={name:d.nom,ing:d.ing.join("\n"),steps:stepsText(d),base:d.personnes,people:state.people||2};
   save();aiClose();go("week");toast("Repas ajouté au menu");
 }
+function aiEditMeal(){var k=aiS.mealKey;aiClose();openSheet(k,keyTitle(k));}
 
-function aiRec(r,onpick){
+function aiRec(box,r,onpick){
   var b=el("button","rec");b.type="button";
   b.appendChild(el("strong","",r.nom));
   var sub=r.personnes?"Pour "+r.personnes+" personnes":[r.temps,r.description].filter(Boolean).join(" · ");
   if(sub)b.appendChild(el("small","",sub));
   b.addEventListener("click",onpick);
-  aiPanel.appendChild(b);
+  box.appendChild(b);
 }
-function aiGrouped(items,onpick){
+function aiGrouped(box,items,onpick){
   CATS.forEach(function(c){
     var xs=items.filter(function(r){return (r.cat||"Plat")===c;});
     if(!xs.length)return;
-    aiPanel.appendChild(el("h2","aisle",CATPL[c]+" ("+xs.length+")"));
-    xs.forEach(function(r){aiRec(r,function(){onpick(r);});});
+    box.appendChild(el("h2","aisle",CATPL[c]+" ("+xs.length+")"));
+    xs.forEach(function(r){aiRec(box,r,function(){onpick(r);});});
   });
 }
 
-function aiRender(){
+function aiRender(keep){
+  var st=keep?aiPanel.scrollTop:0;
   aiPanel.replaceChildren();
-  if(aiS.view==="meal"){aiRenderMeal();return;}
-  aiPanel.appendChild(el("h3","",(aiS.view==="fav"&&!aiS.inDetail)?"Mes favoris":"AI Hub · recettes"));
-  if(aiS.inDetail){aiRenderDetail();return;}
-  if(aiS.view==="fav"){aiRenderFav();return;}
-  aiRenderSearch();
+  if(aiS.view==="meal")aiRenderMeal();
+  else if(aiS.inDetail)aiRenderDetail();
+  else if(aiS.view==="fav")aiRenderFav();
+  else aiRenderSearch();
+  aiRenderFoot();
+  aiPanel.scrollTop=st;
+}
+
+function aiRenderFoot(){
+  aiFoot.replaceChildren();
+  function btn(t,cls,fn){var b=el("button","btn"+(cls?" "+cls:""),t);b.type="button";b.addEventListener("click",fn);aiFoot.appendChild(b);}
+  if(aiS.view==="meal"){
+    btn("Fermer","",aiClose);btn("Modifier","main",aiEditMeal);
+  }else if(aiS.inDetail){
+    btn("‹ Retour","",aiBack);
+    var d=aiS.detail;
+    if(d&&!d.partial&&!aiS.dLoading&&!aiS.err){
+      if(aiS.ctx==="sheet")btn("Utiliser cette recette","main",aiUse);
+      else btn("Ajouter au menu","main",function(){if(aiDaySel&&aiSlotSel)aiAddToMenu(+aiDaySel.value,aiSlotSel.value);});
+    }
+  }else if(aiS.view==="fav"){
+    btn("‹ Retour","",function(){aiS.view="search";aiRender();});btn("Fermer","",aiClose);
+  }else{
+    btn("Fermer","",aiClose);
+    if(aiS.items.length&&aiS.running===0)btn("↻ Générer d’autres","main",function(){aiSearch(true);});
+  }
+  aiFoot.hidden=!aiFoot.children.length;
 }
 
 function aiRenderMeal(){
@@ -864,57 +1080,45 @@ function aiRenderMeal(){
   var st=(m.steps||"").split("\n").filter(function(l){return l.trim();});
   if(st.length)st.forEach(function(l){aiPanel.appendChild(el("p","stepl",l.trim()));});
   else aiPanel.appendChild(el("p","hint","Pas d’étapes enregistrées pour ce repas."));
-  var acts=el("div","acts");
-  var cl=el("button","btn","Fermer");cl.type="button";cl.addEventListener("click",aiClose);
-  var ed=el("button","btn main","Modifier");ed.type="button";
-  ed.addEventListener("click",function(){var k=aiS.mealKey;aiClose();openSheet(k,keyTitle(k));});
-  acts.appendChild(cl);acts.appendChild(ed);aiPanel.appendChild(acts);
 }
 
 function aiRenderDetail(){
-  var back=el("button","back","‹ Retour");back.type="button";
-  back.addEventListener("click",function(){aiS.req++;aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.err="";aiRender();});
-  aiPanel.appendChild(back);
   if(aiS.dLoading){aiPanel.appendChild(el("p","note","Je prépare la recette « "+aiS.dName+" »…"));return;}
   if(aiS.err||!aiS.detail){
     aiPanel.appendChild(el("p","note","Impossible : "+(aiS.err||"recette introuvable")));
-    var rt=el("button","btn main","Réessayer");rt.type="button";rt.addEventListener("click",function(){aiDetail(aiS.dName,aiS.dCat);});aiPanel.appendChild(rt);
+    var rt=el("button","btn main","Réessayer");rt.type="button";rt.style.width="100%";
+    rt.addEventListener("click",function(){aiDetail(aiS.dName,aiS.dCat);});aiPanel.appendChild(rt);
     return;
   }
   var d=aiS.detail;
   aiPanel.appendChild(el("h3","",d.nom));
   aiPanel.appendChild(el("p","hint",(d.cat||"Plat")+" · pour "+d.personnes+" personnes"));
-  var fv=el("button","btn",isFav(d.nom)?"★ Retirer des favoris":"☆ Ajouter aux favoris");fv.type="button";
-  fv.addEventListener("click",function(){toggleFav(d);});aiPanel.appendChild(fv);
+  if(!d.partial){
+    var fv=el("button","btn",isFav(d.nom)?"★ Retirer des favoris":"☆ Ajouter aux favoris");fv.type="button";fv.style.width="100%";
+    fv.addEventListener("click",function(){toggleFav(d);});aiPanel.appendChild(fv);
+  }
   aiPanel.appendChild(el("h2","aisle","Ingrédients"));
   d.ing.forEach(function(x){aiPanel.appendChild(el("div","ingl",x));});
   aiPanel.appendChild(el("h2","aisle","Étapes"));
-  var ol=el("ol","steps");d.steps.forEach(function(x){ol.appendChild(el("li","",x));});aiPanel.appendChild(ol);
-
-  var acts=el("div","acts");acts.style.flexDirection="column";
-  if(aiS.ctx==="sheet"){
-    var u=el("button","btn main","Utiliser cette recette");u.type="button";u.addEventListener("click",aiUse);acts.appendChild(u);
-  }else{
-    var fr=nextFree({});
-    var row=el("div","assign");
-    var sd=sel("",DAYS.map(function(x,i){return [i,x];}),fr.day,"Jour",function(){});
-    var ss=sel("",SLOTS,fr.slot,"Repas",function(){});
-    row.appendChild(sd);row.appendChild(ss);acts.appendChild(row);
-    var a=el("button","btn main","Ajouter au menu");a.type="button";
-    a.addEventListener("click",function(){aiAddToMenu(+sd.value,ss.value);});acts.appendChild(a);
+  if(d.partial&&!d.steps.length)aiPanel.appendChild(el("p","hint","Rédaction des étapes…"));
+  else{var ol=el("ol","steps");d.steps.forEach(function(x){ol.appendChild(el("li","",x));});aiPanel.appendChild(ol);}
+  aiDaySel=aiSlotSel=null;
+  if(!d.partial&&aiS.ctx==="ideas"){
+    var fr=nextFree({}),row=el("div","assign");
+    aiDaySel=sel("",DAYS.map(function(x,i){return [i,x];}),fr.day,"Jour",function(){});
+    aiSlotSel=sel("",SLOTS,fr.slot,"Repas",function(){});
+    row.appendChild(aiDaySel);row.appendChild(aiSlotSel);aiPanel.appendChild(row);
   }
-  aiPanel.appendChild(acts);
 }
 
 function aiRenderFav(){
-  var back=el("button","back","‹ Retour aux recherches");back.type="button";
-  back.addEventListener("click",function(){aiS.view="search";aiRender();});
-  aiPanel.appendChild(back);
+  aiPanel.appendChild(el("h3","","Mes favoris"));
   if(!state.favs.length){aiPanel.appendChild(el("p","note","Aucun favori pour l’instant. Ouvre une recette et touche « Ajouter aux favoris »."));return;}
-  aiGrouped(state.favs,function(r){aiS.inDetail=true;aiS.err="";aiS.dLoading=false;aiS.detail=r;aiRender();});
+  aiGrouped(aiPanel,state.favs,function(r){aiS.inDetail=true;aiS.err="";aiS.dLoading=false;aiS.detail=r;aiRender();});
 }
 
 function aiRenderSearch(){
+  aiPanel.appendChild(el("h3","","AI Hub · recettes"));
   var lab=el("label","","Plat ou ingrédients");lab.htmlFor="ai-q";lab.style.marginTop="0";
   var inp=document.createElement("input");inp.type="text";inp.id="ai-q";inp.value=aiS.q;inp.placeholder="Ex. : poulet, riz, courgette";inp.autocomplete="off";
   inp.addEventListener("input",function(){aiS.q=inp.value;});
@@ -923,20 +1127,31 @@ function aiRenderSearch(){
   var bar=el("div","bar");bar.style.marginTop="10px";
   var go1=el("button","btn main","Chercher");go1.type="button";go1.addEventListener("click",function(){aiSearch(false);});
   var fv=el("button","btn","★ Favoris ("+state.favs.length+")");fv.type="button";fv.addEventListener("click",function(){aiS.view="fav";aiRender();});
-  var cl=el("button","btn","Fermer");cl.type="button";cl.addEventListener("click",aiClose);
-  bar.appendChild(go1);bar.appendChild(fv);bar.appendChild(cl);aiPanel.appendChild(bar);
+  bar.appendChild(go1);bar.appendChild(fv);aiPanel.appendChild(bar);
+  var box=el("div","");box.id="ai-results";aiPanel.appendChild(box);
+  aiRenderResults();
+}
 
-  if(aiS.loading){aiPanel.appendChild(el("p","note","L’IA cherche des recettes…"));return;}
-  if(aiS.err){
-    aiPanel.appendChild(el("p","note","Impossible : "+aiS.err));
-    var rt=el("button","btn main","Réessayer");rt.type="button";rt.addEventListener("click",function(){aiSearch(false);});aiPanel.appendChild(rt);
+function aiRenderResults(){
+  var box=document.getElementById("ai-results");if(!box)return;
+  box.replaceChildren();
+  var busy=aiS.running>0,bad=Object.keys(aiS.catErr);
+  if(!aiS.items.length){
+    if(busy)box.appendChild(el("p","note","L’IA cherche des recettes…"));
+    else if(bad.length){
+      box.appendChild(el("p","note","Impossible : "+aiS.catErr[bad[0]]));
+      var rt=el("button","btn main","Réessayer");rt.type="button";rt.style.width="100%";
+      rt.addEventListener("click",function(){aiSearch(false);});box.appendChild(rt);
+    }
     return;
   }
-  if(!aiS.list)return;
-  aiGrouped(aiS.list,function(r){aiS.inDetail=true;aiDetail(r.nom,r.cat);});
-  var gb=el("div","addbar");
-  var more=el("button","btn main","↻ Générer d’autres recettes");more.type="button";more.addEventListener("click",function(){aiSearch(true);});
-  gb.appendChild(more);aiPanel.appendChild(gb);
+  aiGrouped(box,aiS.items,function(r){aiS.inDetail=true;aiDetail(r.nom,r.cat);});
+  if(busy)box.appendChild(el("p","hint","D’autres recettes arrivent…"));
+  else if(bad.length){
+    box.appendChild(el("p","note","Impossible de charger : "+bad.map(function(c){return CATPL[c];}).join(", ")));
+    var rb=el("button","btn","Réessayer");rb.type="button";rb.style.width="100%";
+    rb.addEventListener("click",function(){aiSearch(false,bad);});box.appendChild(rb);
+  }
 }
 document.getElementById("f-ai").addEventListener("click",function(){
   aiOpen("sheet",document.getElementById("f-name").value.trim());
