@@ -175,8 +175,8 @@ var DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 var KEY="menu-semaine-v1";
 var DKEY="menu-draft";
 
-var state={meals:{},checked:{},people:2,favs:[]};
-try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.meals)state=p;if(!state.checked)state.checked={};if(!state.people)state.people=2;if(!state.favs)state.favs=[];}}catch(e){}
+var state={meals:{},checked:{},people:2,favs:[],appliances:["four","plaques"]};
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.meals)state=p;if(!state.checked)state.checked={};if(!state.people)state.people=2;if(!state.favs)state.favs=[];if(!state.appliances)state.appliances=["four","plaques"];}}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
 
 var tab="home",editKey=null;
@@ -192,7 +192,7 @@ function renderWeek(){
   DAYS.forEach(function(d,i){
     var card=el("section","day"+(i===today?" today":""));
     card.appendChild(el("h2","",d+(i===today?" (aujourd’hui)":"")));
-    [["p","Matin"],["m","Midi"],["s","Soir"]].forEach(function(s){
+    SLOTS.forEach(function(s){
       var key=i+"-"+s[0],m=state.meals[key];
       var b=el("button","slot");b.type="button";
       b.appendChild(el("span","when",s[1]));
@@ -287,8 +287,8 @@ function ingRow(id,text){
 }
 function mealEntries(){
   var out=[];
-  for(var d=0;d<7;d++){["p","m","s"].forEach(function(sl,si){
-    var k=d+"-"+sl,m=state.meals[k];if(m&&m.name)out.push({key:k,m:m,day:d,slot:si});
+  for(var d=0;d<7;d++){SLOTS.forEach(function(sl,si){
+    var k=d+"-"+sl[0],m=state.meals[k];if(m&&m.name)out.push({key:k,m:m,day:d,slot:si});
   });}
   return out;
 }
@@ -424,7 +424,31 @@ function trList(list,from,to){
 }
 
 var ideas={q:"",list:null,loading:false,sel:{},preview:{},all:null,off:0,t:1};
-var SLOTS=[["p","Matin"],["m","Midi"],["s","Soir"]];
+var SLOTS=[["m","Midi"],["s","Soir"]];
+
+var APPLIANCES=[
+  {id:"four",label:"Four"},
+  {id:"plaques",label:"Plaques de cuisson"},
+  {id:"airfryer",label:"Air fryer"},
+  {id:"monsieur",label:"Monsieur Cuisine / Thermomix"},
+  {id:"multicuiseur",label:"Multicuiseur"},
+  {id:"grill",label:"Grill / Plancha"},
+  {id:"microondes",label:"Micro-ondes"}
+];
+function appliancesText(){
+  if(!state.appliances||!state.appliances.length)return "";
+  var labels=state.appliances.map(function(id){
+    var a=APPLIANCES.find(function(x){return x.id===id;});
+    return a?a.label:id;
+  }).join(", ");
+  return " L'utilisateur dispose des appareils suivants : "+labels+". Privilégie des recettes réalisables avec ces appareils (ou sans appareil particulier).";
+}
+function toggleAppliance(id){
+  var i=state.appliances.indexOf(id);
+  if(i>-1)state.appliances.splice(i,1);else state.appliances.push(id);
+  save();
+}
+
 var LEVELS=["Faciles","Intermédiaires","Élaborées"];
 var rawCache={};
 
@@ -448,13 +472,13 @@ function api(p){
 }
 
 function nextFree(taken){
-  for(var d=0;d<7;d++){for(var j=2;j>=1;j--){
-    var k=d+"-"+SLOTS[j][0];if(!state.meals[k]&&!taken[k])return {day:d,slot:SLOTS[j][0]};
-  }}
   for(var d=0;d<7;d++){
-    var k=d+"-p";if(!state.meals[k]&&!taken[k])return {day:d,slot:"p"};
+    for(var j=SLOTS.length-1;j>=0;j--){
+      var k=d+"-"+SLOTS[j][0];
+      if(!state.meals[k]&&!taken[k])return {day:d,slot:SLOTS[j][0]};
+    }
   }
-  return {day:0,slot:"s"};
+  return {day:0,slot:SLOTS[SLOTS.length-1][0]};
 }
 
 function terms(){return ideas.q.split(/[,;\n]+/).map(function(t){return t.trim();}).filter(Boolean).slice(0,4);}
@@ -558,6 +582,24 @@ function renderIdeas(){
   inp.addEventListener("input",function(){ideas.q=inp.value;});
   inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();searchIdeas();}});
   view.appendChild(lab);view.appendChild(inp);
+
+  /* Appareils actifs */
+  var appHint=el("p","hint");
+  if(state.appliances&&state.appliances.length){
+    var labels=state.appliances.map(function(id){var a=APPLIANCES.find(function(x){return x.id===id;});return a?a.label:id;});
+    appHint.textContent="Appareils : "+labels.join(" · ")+"  ·  ";
+    var mod=el("button","btn");mod.type="button";mod.textContent="Modifier";mod.style.flex="none";mod.style.padding="6px 12px";mod.style.fontSize="13px";
+    mod.addEventListener("click",openAppliancesSheet);
+    var wrap=el("div","bar");wrap.style.margin="4px 0 8px";wrap.appendChild(appHint);wrap.appendChild(mod);
+    view.appendChild(wrap);
+  }else{
+    appHint.textContent="Aucun appareil sélectionné — ";
+    var mod=el("button","btn");mod.type="button";mod.textContent="Choisir mes appareils";mod.style.flex="none";mod.style.padding="6px 12px";
+    mod.addEventListener("click",openAppliancesSheet);
+    var wrap=el("div","bar");wrap.style.margin="4px 0 8px";wrap.appendChild(appHint);wrap.appendChild(mod);
+    view.appendChild(wrap);
+  }
+
   var bar=el("div","bar");bar.style.marginTop="10px";
   var b1=el("button","btn main","Trouver des recettes");b1.type="button";b1.addEventListener("click",searchIdeas);
   var b2=el("button","btn","Chercher sur Marmiton");b2.type="button";
@@ -568,6 +610,16 @@ function renderIdeas(){
   var b3=el("button","btn main","Chercher sur AI Hub");b3.type="button";
   b3.addEventListener("click",function(){aiOpen("ideas",terms().join(", "));});
   bar.appendChild(b1);bar.appendChild(b2);bar.appendChild(b3);view.appendChild(bar);
+
+  /* Bouton génération aléatoire */
+  var randBar=el("div","bar");
+  var bRand=el("button","btn main","🎲 Générer des repas au hasard");bRand.type="button";
+  bRand.style.width="100%";
+  bRand.addEventListener("click",function(){
+    aiOpen("ideas","idées de repas variés et faciles pour le quotidien");
+  });
+  randBar.appendChild(bRand);
+  view.appendChild(randBar);
   if(ideas.loading){view.appendChild(el("p","note","Recherche en cours…"));return;}
   if(!ideas.list)return;
   if(!ideas.list.length){view.appendChild(el("p","note","Aucune recette trouvée. Essaie un ingrédient plus courant ou moins d’ingrédients."));return;}
@@ -660,6 +712,28 @@ function renderHome(){
   var s3=el("div","stat");s3.appendChild(el("strong","",String(Math.max(0,n-checked))));s3.appendChild(el("span","","restants"));
   stats.appendChild(s1);stats.appendChild(s2);stats.appendChild(s3);view.appendChild(stats);
 
+  /* ----- Résumé du jour ----- */
+  var todayBox=el("section","day today");
+  todayBox.appendChild(el("h2","","Aujourd’hui · "+DAYS[today]));
+  SLOTS.forEach(function(s){
+    var key=today+"-"+s[0],m=state.meals[key];
+    var b=el("button","slot");b.type="button";
+    b.appendChild(el("span","when",s[1]));
+    var w=el("span","what"+(m&&m.name?"":" empty"),m&&m.name?m.name:"Rien de prévu");
+    if(m&&m.name&&ingCount(m)){w.appendChild(el("small","",ingCount(m)+" ingrédient"+(ingCount(m)>1?"s":"")+(m.people?", "+m.people+" pers.":"")));}
+    b.appendChild(w);
+    b.addEventListener("click",function(){openSheet(key,DAYS[today]+", "+s[1].toLowerCase());});
+    var wrap=el("div","slotwrap");wrap.appendChild(b);
+    if(m&&m.name&&(ingCount(m)||(m.steps&&m.steps.trim()))){
+      var rb=el("button","recbtn","Recette");rb.type="button";
+      rb.addEventListener("click",function(){aiOpenMeal(key);});
+      wrap.appendChild(rb);
+    }
+    todayBox.appendChild(wrap);
+  });
+  view.appendChild(todayBox);
+
+  /* ----- Navigation tiles ----- */
   [["week","Repas",meals?meals+(meals>1?" repas planifiés":" repas planifié"):"Planifier la semaine"],
    ["idea","Idées","Trouver des recettes avec tes ingrédients"],
    ["list","Courses",n?(n-checked>0?(n-checked)+(n-checked>1?" articles à acheter":" article à acheter"):"Liste terminée"):"Liste générée automatiquement"]].forEach(function(t){
@@ -670,6 +744,13 @@ function renderHome(){
     b.addEventListener("click",function(){go(t[0]);});
     view.appendChild(b);
   });
+
+  /* ----- Bouton appareils ----- */
+  var appBtn=el("button","btn");appBtn.type="button";appBtn.style.width="100%";appBtn.style.marginTop="8px";
+  var nApp=state.appliances?state.appliances.length:0;
+  appBtn.textContent="🍽 Mes appareils de cuisine ("+nApp+")";
+  appBtn.addEventListener("click",openAppliancesSheet);
+  view.appendChild(appBtn);
 }
 
 var PROXIES=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://api.codetabs.com/v1/proxy?quest="];
@@ -869,6 +950,7 @@ function aiListPrompt(q,cat,n,seen){
   var what=cat==="Entrée"?"entrées":cat==="Dessert"?"desserts":"plats principaux";
   return "Propose "+n+" idées de "+what+" pour cette demande : « "+q+" » (un nom de plat ou des ingrédients disponibles). "+
     "Recettes variées et faciles. Pour une entrée ou un dessert, tu peux t’éloigner des ingrédients cités et proposer des classiques populaires. "+
+    appliancesText()+
     (seen.length?"Ne propose surtout pas : "+seen.slice(-45).join(", ")+". ":"")+
     "Réponds UNIQUEMENT avec un tableau JSON, sans texte autour ni markdown : "+
     '[{"nom":"Nom","description":"6 mots maximum","temps":"30 min"}]';
@@ -887,6 +969,37 @@ function aiClose(){
   aiAbort(aiS.lctls);aiAbort(aiS.dctls);aiS.rl++;aiS.rd++;aiS.running=0;
   aiSheet.classList.remove("open");aiSheet.setAttribute("aria-hidden","true");
 }
+
+/* --- Feuille de sélection des appareils --- */
+function openAppliancesSheet(){
+  aiS.view="appliances"; // réutilise le panel AI pour simplicité
+  aiShow();
+  aiPanel.replaceChildren();
+  aiPanel.appendChild(el("h3","","Mes appareils de cuisine"));
+  aiPanel.appendChild(el("p","hint","Coche ceux que tu as. Les recettes générées en tiendront compte."));
+  APPLIANCES.forEach(function(a){
+    var row=el("label","row");
+    var cb=document.createElement("input");cb.type="checkbox";
+    cb.checked=state.appliances.indexOf(a.id)>-1;
+    cb.addEventListener("change",function(){
+      toggleAppliance(a.id);
+      // refresh count if needed
+    });
+    row.appendChild(cb);
+    row.appendChild(el("span","",a.label));
+    aiPanel.appendChild(row);
+  });
+  aiFoot.replaceChildren();
+  var done=el("button","btn main","Terminé");done.type="button";
+  done.addEventListener("click",function(){
+    aiClose();
+    if(tab==="home")render();
+    else if(tab==="idea")renderIdeas();
+  });
+  aiFoot.appendChild(done);
+  aiFoot.hidden=false;
+}
+
 function aiBack(){aiAbort(aiS.dctls);aiS.rd++;aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.err="";aiRender();}
 function aiResultsSoon(){if(aiRT)return;aiRT=setTimeout(function(){aiRT=null;aiRenderResults();},120);}
 
@@ -955,7 +1068,7 @@ function aiDetail(name,cat){
   var my=++aiS.rd;aiS.dName=name;aiS.dCat=cat||"";aiS.err="";
   if(aiDetailCache[name]){aiS.detail=aiDetailCache[name];aiS.dLoading=false;aiRender();return;}
   aiS.dLoading=true;aiS.detail=null;aiRender();
-  var prompt="Donne la recette « "+name+" » pour 4 personnes. Réponds UNIQUEMENT avec un objet JSON, sans texte autour ni markdown, dans cet ordre : "+
+  var prompt="Donne la recette « "+name+" » pour 4 personnes. "+appliancesText()+" Réponds UNIQUEMENT avec un objet JSON, sans texte autour ni markdown, dans cet ordre : "+
     '{"personnes":4,"ingredients":["400 g de pâtes","3 tomates","1 oignon"],"etapes":["Première étape","Deuxième étape"]}. '+
     "Chaque ingrédient sur une chaîne, la quantité d’abord puis l’ingrédient, avec les unités g, kg, ml, cl ou l. Étapes courtes (une phrase), 8 au maximum.";
   function build(txt){
