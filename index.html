@@ -169,15 +169,192 @@ h1{font-size:30px}
 <div id="aisheet" aria-hidden="true"><div class="panel"><div class="grab"></div><div id="ai-panel" class="sh-body"></div><div id="ai-foot" class="acts sh-foot" hidden></div></div></div>
 <div id="toast" role="status"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
-/* Menu de la semaine – v3 */
+/* Menu de la semaine – v5 (sync Firebase) */
 var DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 var KEY="menu-semaine-v1";
 var DKEY="menu-draft";
+var FAMILY_KEY="menu-family-code";
+
+/* ---------- Firebase ---------- */
+var firebaseConfig = {
+  apiKey: "AIzaSyCgaXapgiYiQhQA46W5l-P_sJgXOkOest8",
+  authDomain: "menu-semaine-e6abe.firebaseapp.com",
+  databaseURL: "https://menu-semaine-e6abe-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "menu-semaine-e6abe",
+  storageBucket: "menu-semaine-e6abe.firebasestorage.app",
+  messagingSenderId: "348414840788",
+  appId: "1:348414840788:web:d1ee0d3bdca9bb6281d041"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var auth = firebase.auth();
+
+var familyCode = localStorage.getItem(FAMILY_KEY) || null;
+var syncReady = false;
+var applyingRemote = false; // évite les boucles save → remote → save
 
 var state={meals:{},checked:{},people:2,favs:[],appliances:["four","plaques"]};
-try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.meals)state=p;if(!state.checked)state.checked={};if(!state.people)state.people=2;if(!state.favs)state.favs=[];if(!state.appliances)state.appliances=["four","plaques"];}}catch(e){}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+try{
+  var raw=localStorage.getItem(KEY);
+  if(raw){
+    var p=JSON.parse(raw);
+    if(p&&p.meals)state=p;
+    if(!state.checked)state.checked={};
+    if(!state.people)state.people=2;
+    if(!state.favs)state.favs=[];
+    if(!state.appliances)state.appliances=["four","plaques"];
+  }
+}catch(e){}
+
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+  if(syncReady && familyCode && !applyingRemote){
+    db.ref("families/"+familyCode+"/data").set(state).catch(function(err){
+      console.warn("Sync write error", err);
+      toast("Erreur de synchronisation");
+    });
+  }
+}
+
+function generateFamilyCode(){
+  var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var code="";
+  for(var i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function startSync(code){
+  familyCode = code;
+  localStorage.setItem(FAMILY_KEY, code);
+  syncReady = true;
+
+  // Écoute en temps réel
+  db.ref("families/"+code+"/data").on("value", function(snap){
+    var remote = snap.val();
+    if(!remote){
+      // Première fois : on pousse l’état local
+      db.ref("families/"+code+"/data").set(state);
+      return;
+    }
+    // On applique les données distantes
+    applyingRemote = true;
+    state = remote;
+    if(!state.checked)state.checked={};
+    if(!state.people)state.people=2;
+    if(!state.favs)state.favs=[];
+    if(!state.appliances)state.appliances=["four","plaques"];
+    try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+    applyingRemote = false;
+    render();
+  }, function(err){
+    console.warn("Sync listen error", err);
+    toast("Impossible de synchroniser");
+  });
+}
+
+function leaveFamily(){
+  if(familyCode){
+    db.ref("families/"+familyCode+"/data").off();
+  }
+  familyCode = null;
+  localStorage.removeItem(FAMILY_KEY);
+  syncReady = false;
+  toast("Synchronisation désactivée");
+  render();
+}
+
+function openSyncSheet(){
+  aiS.view = "sync";
+  aiShow();
+  aiPanel.replaceChildren();
+  aiPanel.appendChild(el("h3","","Synchronisation"));
+  
+  if(familyCode){
+    aiPanel.appendChild(el("p","hint","Les deux téléphones partagent le même menu."));
+    aiPanel.appendChild(el("p","","Code famille :"));
+    var codeBox = el("div","");
+    codeBox.style.cssText = "font-size:28px;font-weight:800;letter-spacing:4px;text-align:center;padding:16px;background:var(--bg);border-radius:12px;margin:8px 0 16px";
+    codeBox.textContent = familyCode;
+    aiPanel.appendChild(codeBox);
+    
+    var copyBtn = el("button","btn main","Copier le code");
+    copyBtn.type="button";
+    copyBtn.style.width="100%";
+    copyBtn.addEventListener("click", function(){
+      navigator.clipboard.writeText(familyCode).then(function(){toast("Code copié");}).catch(function(){toast("Copie impossible");});
+    });
+    aiPanel.appendChild(copyBtn);
+    
+    var leaveBtn = el("button","btn warn","Quitter ce partage");
+    leaveBtn.type="button";
+    leaveBtn.style.width="100%";
+    leaveBtn.style.marginTop="10px";
+    leaveBtn.addEventListener("click", function(){
+      if(confirm("Arrêter la synchronisation sur cet appareil ?")){
+        leaveFamily();
+        aiClose();
+      }
+    });
+    aiPanel.appendChild(leaveBtn);
+  } else {
+    aiPanel.appendChild(el("p","hint","Crée un code pour partager le menu avec un autre téléphone, ou rejoins un code existant."));
+    
+    var createBtn = el("button","btn main","Créer un nouveau code famille");
+    createBtn.type="button";
+    createBtn.style.width="100%";
+    createBtn.style.marginBottom="16px";
+    createBtn.addEventListener("click", function(){
+      var code = generateFamilyCode();
+      startSync(code);
+      toast("Code créé : "+code);
+      openSyncSheet(); // rafraîchit l’affichage
+    });
+    aiPanel.appendChild(createBtn);
+    
+    aiPanel.appendChild(el("label","","Rejoindre avec un code"));
+    var inp = document.createElement("input");
+    inp.type="text";
+    inp.id="sync-code";
+    inp.placeholder="Ex. : A7K9P2";
+    inp.style.textTransform="uppercase";
+    inp.maxLength=6;
+    aiPanel.appendChild(inp);
+    
+    var joinBtn = el("button","btn main","Rejoindre");
+    joinBtn.type="button";
+    joinBtn.style.width="100%";
+    joinBtn.style.marginTop="10px";
+    joinBtn.addEventListener("click", function(){
+      var code = (inp.value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
+      if(code.length < 4){toast("Code trop court");return;}
+      startSync(code);
+      toast("Connecté au code "+code);
+      aiClose();
+      render();
+    });
+    aiPanel.appendChild(joinBtn);
+  }
+  
+  aiFoot.replaceChildren();
+  var closeB = el("button","btn","Fermer");
+  closeB.type="button";
+  closeB.addEventListener("click", aiClose);
+  aiFoot.appendChild(closeB);
+  aiFoot.hidden = false;
+}
+
+/* Auth anonyme au démarrage */
+auth.signInAnonymously().then(function(){
+  if(familyCode) startSync(familyCode);
+}).catch(function(err){
+  console.warn("Auth error", err);
+  toast("Connexion cloud impossible");
+});
+
 
 var tab="home",editKey=null;
 var view=document.getElementById("view");
@@ -751,6 +928,17 @@ function renderHome(){
   appBtn.textContent="🍽 Mes appareils de cuisine ("+nApp+")";
   appBtn.addEventListener("click",openAppliancesSheet);
   view.appendChild(appBtn);
+
+  /* ----- Bouton synchronisation ----- */
+  var syncBtn=el("button","btn");syncBtn.type="button";syncBtn.style.width="100%";syncBtn.style.marginTop="8px";
+  if(familyCode){
+    syncBtn.textContent="🔄 Sync active · "+familyCode;
+    syncBtn.style.borderColor="var(--acc)";
+  }else{
+    syncBtn.textContent="🔄 Synchroniser entre téléphones";
+  }
+  syncBtn.addEventListener("click",openSyncSheet);
+  view.appendChild(syncBtn);
 }
 
 var PROXIES=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://api.codetabs.com/v1/proxy?quest="];
