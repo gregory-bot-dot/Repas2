@@ -3,135 +3,172 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2F7D4F" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111A22" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#8A2F2B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Menu">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Menu de la semaine</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
-:root{--bg:#EEF2F7;--surface:#fff;--ink:#17212B;--mute:#5B6773;--line:#D5DDE6;--acc:#2F7D4F;--accink:#fff;--warn:#C4402B;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111A22;--surface:#1A2530;--ink:#EAF0F5;--mute:#9AA8B5;--line:#2C3A47;--acc:#5BBF86;--accink:#0E1A13;--warn:#F07A66}}
-:root[data-theme="dark"]{--bg:#111A22;--surface:#1A2530;--ink:#EAF0F5;--mute:#9AA8B5;--line:#2C3A47;--acc:#5BBF86;--accink:#0E1A13;--warn:#F07A66}
+:root{
+  --bg:rgba(255,255,255,.10);--surface:rgba(255,255,255,.13);--ink:#FFF3E3;--mute:rgba(255,243,227,.76);--line:rgba(255,255,255,.2);
+  --acc:#FFF3E3;--accink:#7A2823;--warn:#FFC9BD;--gold:#F4C877;--sect:#F4C877;--cream:#FFF3E3;--brick:#7A2823;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)
+}
 *,*::before,*::after{box-sizing:inherit}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.4 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;max-width:560px;margin-inline:auto;padding:16px 16px 96px}
-h1{font-size:28px;font-weight:800;margin:8px 0 14px;letter-spacing:-.02em}
-.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:16px}
-.tabs button{flex:1;border:0;background:none;color:var(--mute);font:600 15px inherit;font-family:inherit;padding:10px;border-radius:10px;cursor:pointer}
-.tabs button[aria-selected="true"]{background:var(--acc);color:var(--accink)}
-.day{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden;transition:border-color .2s}
-.day.today{border-color:var(--acc);border-width:2px}
-.day h2{font-size:17px;font-weight:800;margin:0;padding:12px 14px 6px}
-.slot{display:flex;align-items:baseline;gap:12px;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-family:inherit;padding:12px 14px;cursor:pointer;transition:background .15s}
-.slot:active{background:var(--bg)}
-.slot .when{flex:0 0 52px;color:var(--mute);font-size:14px}
-.slot .what{flex:1}
-.slot .what.empty{color:var(--mute)}
-.slot small{display:block;color:var(--mute);font-size:13px}
-.slot:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:-3px}
-.row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:opacity .15s}
-.row input{width:22px;height:22px;accent-color:var(--acc);flex:none}
-.row.done span{text-decoration:line-through;color:var(--mute)}
-.bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.btn{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 15px inherit;font-family:inherit;padding:12px;border-radius:12px;cursor:pointer;min-width:0;transition:transform .1s,background .15s}
-.btn:active{transform:scale(.98)}
-.btn.main{background:var(--acc);color:var(--accink);border-color:var(--acc)}
-.btn.warn{color:var(--warn)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.aisle{font-size:15px;font-weight:800;color:var(--mute);margin:16px 2px 8px}
-[hidden]{display:none!important}
-.idea{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:border-color .2s,border-width .2s}
-.idea.on{border-color:var(--acc);border-width:2px}
-.ichk{display:flex;align-items:flex-start;gap:12px;cursor:pointer}
-.ichk input{width:22px;height:22px;accent-color:var(--acc);flex:none;margin-top:2px}
-.ichk small{display:block;color:var(--mute);font-size:13px}
-.preview{font-size:13px;color:var(--mute);margin:8px 0 0 34px;line-height:1.35}
-.assign{display:flex;gap:8px;margin-top:10px}
-.assign select{flex:1;min-width:0;font:inherit;font-size:16px;font-family:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
-.addbar{position:sticky;bottom:12px;margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.addbar .btn{width:100%;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-.back{border:0;background:none;color:var(--acc);font:600 17px inherit;font-family:inherit;padding:8px 0;cursor:pointer}
-.tile{display:flex;align-items:center;gap:18px;width:100%;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:22px 20px;margin-bottom:14px;font:inherit;font-family:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
-.tile:active{transform:scale(.985)}
-.tile .ico{flex:none;width:76px;height:76px;border-radius:20px;background:var(--acc);color:var(--accink);display:grid;place-items:center}
-.tile .ico svg{width:44px;height:44px}
-.tile .tt{font-size:24px;font-weight:800;letter-spacing:-.01em}
-.tile .tt small{display:block;font-size:14px;font-weight:400;color:var(--mute);margin-top:2px}
-.tile:focus-visible,.back:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-.note{color:var(--mute);padding:24px 8px;text-align:center}
-#sheet,#aisheet{position:fixed;inset:0;background:rgba(10,16,22,0);display:flex;align-items:flex-end;z-index:20;pointer-events:none;transition:background .25s}
-#sheet.open,#aisheet.open{background:rgba(10,16,22,.55);pointer-events:auto}
-#aisheet{z-index:25}
-#sheet form,#sheet .panel,#aisheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:0;transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
-#sheet.open form,#sheet.open .panel,#aisheet.open .panel{transform:translateY(0)}
-#aisheet .panel{display:flex;flex-direction:column;height:88vh;height:88dvh;max-height:92vh;overflow:hidden}
-#sheet h3,#aisheet h3{margin:0 0 12px;font-size:20px;font-weight:800}
-label{display:block;font-weight:600;font-size:14px;margin:10px 0 4px}
-input[type=text],input[type=number],textarea,select{width:100%;font:inherit;font-size:16px;font-family:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-textarea{min-height:130px;resize:vertical}
+html{background:#7F2B26;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 12px);-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--ink);font:400 16px/1.45 "Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;max-width:560px;margin-inline:auto;padding:10px 16px calc(116px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(120% 55% at 50% 0%,#B8504A 0%,rgba(184,80,74,0) 65%),linear-gradient(180deg,#9A3732 0%,#7A2823 100%)}
+button{font-family:inherit}
+h1{font:800 32px/1.08 "Fraunces",Georgia,serif;letter-spacing:-.01em;margin:8px 0 16px}
+h1 .gold{display:block;color:var(--gold)}
 .hint{color:var(--mute);font-size:13px;margin:4px 0 0}
-.acts{display:flex;gap:8px;margin-top:14px}
-.sug{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-height:30vh;overflow:auto}
-.sug .btn{text-align:left;font-weight:400}
-#sheet form{display:flex;flex-direction:column;max-height:92vh;overflow:hidden}
-.rec{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;color:var(--ink);font:inherit;font-family:inherit;cursor:pointer}
-.rec:active{transform:scale(.99)}
-.rec strong{display:block;font-weight:800}
-.rec small{display:block;color:var(--mute);font-size:13px;margin-top:2px}
-.ingl{padding:8px 0;border-top:1px solid var(--line)}
-.steps{margin:0 0 8px;padding-left:22px}
-.steps li{margin-bottom:10px}
-.slotwrap{display:flex;align-items:stretch;border-top:1px solid var(--line)}
-.slotwrap .slot{border-top:0;width:auto;flex:1;min-width:0}
-.recbtn{flex:none;border:0;border-left:1px solid var(--line);background:none;color:var(--acc);font-weight:600;font-size:14px;font-family:inherit;padding:0 14px;cursor:pointer}
-.stepl{margin:0 0 10px}
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:30;transition:opacity .2s,transform .2s;pointer-events:none}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.stats{display:flex;gap:10px;margin-bottom:18px}
-.stat{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
-.stat strong{display:block;font-size:22px;font-weight:800}
-.stat span{font-size:13px;color:var(--mute)}
-
-/* ---------- Polish v4 : gros boutons, cartes, fluidité ---------- */
+.note{color:var(--mute);padding:22px 8px;text-align:center}
+[hidden]{display:none!important}
 *{-webkit-tap-highlight-color:transparent}
-button,.row,.tile,.slot,select{touch-action:manipulation}
+button,.row,.slot,select{touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #view.enter{animation:rise .22s ease both}
 @media (prefers-reduced-motion:reduce){#view.enter{animation:none}}
-h1{font-size:30px}
-.btn{min-height:50px;padding:13px 14px;border-radius:14px;font-size:16px}
-.back{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px 8px 10px;margin:0 0 4px -10px;font-size:17px;border-radius:12px}
-.back:active{background:var(--surface)}
-.tabs button{min-height:44px}
-.day,.row,.idea,.stat,.tile,.rec{box-shadow:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.04)}
-.slot{padding:15px 14px}
-.row{min-height:56px}
-.tile{padding:20px}
-.grab{flex:none;width:44px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 6px}
-.sh-body{flex:1;min-height:0;overflow:auto;padding:4px 16px 14px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-.sh-foot{flex:none;margin:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
-.sh-foot .btn{min-height:56px;font-size:17px;border-radius:16px}
-.sh-foot .btn.main{flex:1.6}
-.sh-foot .btn.warn{flex:.8}
-.mhead{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-family:inherit;padding:14px;min-height:64px;cursor:pointer}
+
+/* --- cartes jour --- */
+.day{background:var(--surface);border:1px solid var(--line);border-radius:22px;margin-bottom:12px;overflow:hidden}
+.day.today{background:rgba(255,243,227,.2);border-color:rgba(255,243,227,.55)}
+.day.past{opacity:.62}
+.dayhead{display:flex;align-items:center;gap:10px;padding:14px 16px 10px}
+.dayhead h2{margin:0;font:700 20px "Fraunces",Georgia,serif}
+.pill{display:inline-block;background:var(--cream);color:var(--brick);font-weight:800;font-size:13px;padding:3px 10px;border-radius:999px}
+.slotwrap{display:flex;align-items:stretch;border-top:1px solid var(--line)}
+.slot{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;border:0;background:none;color:var(--ink);font:inherit;padding:12px 16px;min-height:66px;cursor:pointer}
+.slot:active{background:rgba(255,255,255,.08)}
+.ico2{flex:none;width:42px;height:42px;border-radius:14px;background:rgba(255,243,227,.16);display:grid;place-items:center;font-size:20px}
+.slot .txt{flex:1;min-width:0}
+.slot .when{display:block;font-size:12px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+.slot .what{display:block;font-weight:700;font-size:17px}
+.slot .what.empty{font-weight:600;color:var(--mute)}
+.slot small{display:block;color:var(--mute);font-size:13px;font-weight:400}
+.slot .go{flex:none;color:var(--mute);font-size:24px;line-height:1}
+.recbtn{flex:none;align-self:center;margin-right:12px;border:1px solid var(--line);background:rgba(255,243,227,.16);color:var(--ink);font-weight:800;font-size:13px;padding:9px 13px;border-radius:999px;cursor:pointer}
+
+/* --- cartes, boutons, puces --- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font:700 19px "Fraunces",Georgia,serif;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.kv span:first-child{color:var(--mute);flex:none}
+.kv span:last-child{text-align:right;font-weight:700}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.mini{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px;color:var(--ink);font:inherit;cursor:pointer;min-height:96px}
+.mini:active{transform:scale(.98)}
+.mini .em{font-size:26px;line-height:1.1}
+.mini b{font-size:17px;font-weight:800}
+.mini span.s{font-size:13px;color:var(--mute)}
+.cta{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--cream);color:var(--brick);border:0;border-radius:22px;padding:14px 16px;margin-bottom:14px;cursor:pointer;font:inherit;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.cta:active{transform:scale(.99)}
+.cta .em{font-size:30px}
+.cta .ct{flex:1;min-width:0}
+.cta b{display:block;font-size:17px;font-weight:800}
+.cta small{display:block;font-size:13px;color:#9A5F58}
+.cta .go{font-size:26px;color:#9A5F58}
+.bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.btn{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:16px;padding:13px 14px;border-radius:16px;cursor:pointer;min-width:0;min-height:50px;transition:transform .1s,background .15s}
+.btn:active{transform:scale(.98)}
+.btn.main{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.btn.warn{color:var(--warn)}
+.btn.ghost{background:none}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:700;font-size:14px;padding:9px 14px;border-radius:999px;min-height:40px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.chip .x{opacity:.65;margin-left:4px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.tag{background:var(--bg);color:var(--ink);font-weight:700;font-size:13px;padding:5px 11px;border-radius:999px}
+.addrow{display:flex;gap:8px;margin:0 0 12px}
+.addrow input{flex:1}
+.addrow .btn{flex:none;width:54px;padding:0;font-size:24px}
+.stepper{display:flex;align-items:center;gap:16px;margin:4px 0 6px}
+.stepper button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:800;font-size:24px;cursor:pointer}
+.stepper b{min-width:28px;text-align:center;font-size:22px}
+.prog{height:10px;border-radius:99px;background:rgba(0,0,0,.22);overflow:hidden;margin:8px 0 2px}
+.prog i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .3s}
+
+/* --- sections, lignes --- */
+.aisle{font:800 13px "Nunito",sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--sect);margin:20px 2px 8px}
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,.2);border-radius:16px;padding:4px;margin-bottom:14px}
+.tabs button{flex:1;border:0;background:none;color:var(--mute);font-weight:700;font-size:15px;min-height:42px;border-radius:12px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--cream);color:var(--brick)}
+.row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:8px;min-height:56px;cursor:pointer}
+.row input,.ichk input{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:8px;border:2px solid var(--mute);flex:none;display:grid;place-content:center;margin:0;background:none}
+.row input:checked,.ichk input:checked{background:var(--acc);border-color:var(--acc)}
+.row input:checked::after,.ichk input:checked::after{content:"";width:6px;height:11px;border:solid var(--accink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.row.done span{text-decoration:line-through;color:var(--mute)}
+.mhead{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;padding:14px 16px;min-height:66px;cursor:pointer}
 .mhead .mt{flex:1;min-width:0}
 .mhead .mt b{display:block;font-weight:800;font-size:17px}
 .mhead small{display:block;color:var(--mute);font-size:13px}
-.mhead .chev{flex:none;color:var(--mute);font-size:24px;transition:transform .2s}
+.mhead .chev{flex:none;color:var(--mute);font-size:26px;transition:transform .2s}
 .mcard.open .chev{transform:rotate(90deg)}
 .mbody{border-top:1px solid var(--line);padding:12px 12px 6px}
-.mbody .row{box-shadow:none}
+.mbody .row{background:rgba(255,255,255,.08)}
 .mbody .btn{width:100%;margin-bottom:8px}
+.idea{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:8px}
+.idea.on{border-color:var(--cream);border-width:2px}
+.ichk{display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+.ichk input{margin-top:2px}
+.ichk small{display:block;color:var(--mute);font-size:13px}
+.preview{font-size:13px;color:var(--mute);margin:8px 0 0 36px;line-height:1.35}
+.assign{display:flex;gap:8px;margin-top:10px}
+.assign select{flex:1;min-width:0}
+.addbar{position:sticky;bottom:calc(92px + env(safe-area-inset-bottom,0px));margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.addbar .btn{width:100%;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+
+/* --- champs --- */
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 5px}
+input[type=text],input[type=number],textarea,select{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+::placeholder{color:var(--mute);opacity:.8}
+textarea{min-height:130px;resize:vertical}
+.acts{display:flex;gap:8px;margin-top:14px}
+
+/* --- barre de navigation --- */
+#nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(536px,calc(100% - 24px));display:flex;gap:4px;padding:6px;background:rgba(48,14,12,.84);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);border-radius:26px;z-index:10;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+#nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;color:rgba(255,243,227,.78);font-weight:800;font-size:11px;padding:7px 4px;border-radius:20px;min-height:56px;cursor:pointer}
+#nav button svg{width:24px;height:24px;display:block}
+#nav button[aria-current="page"]{background:var(--cream);color:var(--brick)}
+
+/* --- feuilles (formulaire repas + panneau IA) --- */
+#sheet,#aisheet{--bg:#F6E7D6;--surface:#FFF8EF;--ink:#4A1E1A;--mute:#8A5A52;--line:#EAD3BF;--acc:#A8392F;--accink:#FFF8EF;--warn:#B3261E;--sect:#A8392F;position:fixed;inset:0;background:rgba(24,6,5,0);display:flex;align-items:flex-end;z-index:20;pointer-events:none;transition:background .25s;color:var(--ink)}
+#sheet.open,#aisheet.open{background:rgba(24,6,5,.6);pointer-events:auto}
+#aisheet{z-index:25}
+#sheet form,#aisheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--surface);border-radius:26px 26px 0 0;padding:0;transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;overflow:hidden}
+#sheet form{max-height:92vh;max-height:92dvh}
+#aisheet .panel{height:88vh;height:88dvh;max-height:92vh}
+#sheet.open form,#aisheet.open .panel{transform:translateY(0)}
+#sheet h3,#aisheet h3{margin:0 0 6px;font:800 24px "Fraunces",Georgia,serif}
+.grab{flex:none;width:44px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 6px}
+.sh-body{flex:1;min-height:0;overflow:auto;padding:4px 18px 16px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.sh-foot{flex:none;margin:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.sh-foot .btn{min-height:56px;font-size:17px;border-radius:18px}
+.sh-foot .btn.main{flex:1.6}
+.sh-foot .btn.warn{flex:.8}
+.rec{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-bottom:8px;color:var(--ink);font:inherit;cursor:pointer}
+.rec:active{transform:scale(.99)}
+.rec strong{display:block;font-weight:800}
+.rec small{display:block;color:var(--mute);font-size:13px;margin-top:2px}
+.ingl{padding:9px 0;border-top:1px solid var(--line)}
+.steps{margin:0 0 8px;padding-left:22px}
+.steps li{margin-bottom:10px}
+.stepl{margin:0 0 10px}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;background:#2B0F0D;color:#FFF3E3;padding:11px 18px;border-radius:999px;font-size:14px;font-weight:700;z-index:40;transition:opacity .2s,transform .2s;pointer-events:none;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <header id="top"></header>
 <main id="view"></main>
+<nav id="nav" aria-label="Navigation"></nav>
 
 <div id="sheet" aria-hidden="true">
   <form id="form">
@@ -140,7 +177,7 @@ h1{font-size:30px}
     <h3 id="sh-title"></h3>
     <label for="f-name">Repas</label>
     <input type="text" id="f-name" placeholder="Ex. : pâtes à la tomate" autocomplete="off">
-    <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-search">Chercher sur Marmiton</button><button type="button" class="btn main" id="f-ai">Chercher sur AI Hub</button></div>
+    <div class="bar" style="margin:10px 0 0"><button type="button" class="btn" id="f-search">Chercher sur Marmiton</button><button type="button" class="btn main" id="f-ai">Chercher sur AI Hub</button></div>
 
     <label for="f-url">Lien d’une recette</label>
     <div style="display:flex; gap:8px; margin-bottom: 8px;">
@@ -173,11 +210,54 @@ h1{font-size:30px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
-/* Menu de la semaine – v5 (sync Firebase) */
+/* Menu de la semaine – v6 (nouvelle interface chaleureuse + sync Firebase) */
 var DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+var SLOTS=[["m","Midi"],["s","Soir"]];
+var SLOT_ICO={m:"☀️",s:"🌙"};
 var KEY="menu-semaine-v1";
 var DKEY="menu-draft";
 var FAMILY_KEY="menu-family-code";
+
+var view=document.getElementById("view"),nav=document.getElementById("nav");
+var tab="home",editKey=null;
+
+function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+function todayIdx(){return (new Date().getDay()+6)%7;}
+function monthName(){return ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][new Date().getMonth()];}
+function dateStr(){var s=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});return s.charAt(0).toUpperCase()+s.slice(1);}
+/* clé sûre pour Firebase (pas de . # $ [ ] /) */
+function ck(id){return String(id).replace(/[.#$\[\]\/]/g,"_");}
+
+/* ---------- état ---------- */
+function toArr(x){
+  if(Array.isArray(x))return x.filter(function(v){return v!==null&&v!==undefined;});
+  if(x&&typeof x==="object")return Object.keys(x).sort(function(a,b){return a-b;}).map(function(k){return x[k];});
+  return [];
+}
+function normState(s){
+  if(!s||typeof s!=="object")s={};
+  if(!s.meals||typeof s.meals!=="object")s.meals={};
+  Object.keys(s.meals).forEach(function(k){if(/-p$/.test(k))delete s.meals[k];}); /* ancienne ligne « Matin » supprimée */
+  if(!s.checked||typeof s.checked!=="object")s.checked={};
+  if(!s.people)s.people=2;
+  s.favs=toArr(s.favs).map(function(f){f.ing=toArr(f.ing);f.steps=toArr(f.steps);return f;});
+  s.appliances=toArr(s.appliances);
+  var P=(s.profile&&typeof s.profile==="object")?s.profile:{};
+  P.avoid=toArr(P.avoid);P.wishes=toArr(P.wishes);s.profile=P;
+  return s;
+}
+/* signature stable (ignore l'ordre des clés et les conteneurs vides, comme Firebase) */
+function stable(o){
+  if(o===null||o===undefined)return undefined;
+  if(Array.isArray(o)){var a=o.map(stable).filter(function(x){return x!==undefined;});return a.length?a:undefined;}
+  if(typeof o==="object"){var r={},n=0;Object.keys(o).sort().forEach(function(k){var v=stable(o[k]);if(v!==undefined){r[k]=v;n++;}});return n?r:undefined;}
+  return o;
+}
+function sig(o){return JSON.stringify(stable(o)||{});}
+
+var state=null;
+try{var rawS=localStorage.getItem(KEY);if(rawS)state=normState(JSON.parse(rawS));}catch(e){state=null;}
+if(!state)state=normState({appliances:["four","plaques"]});
 
 /* ---------- Firebase ---------- */
 var firebaseConfig = {
@@ -190,228 +270,159 @@ var firebaseConfig = {
   appId: "1:348414840788:web:d1ee0d3bdca9bb6281d041"
 };
 firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
-var auth = firebase.auth();
-
-var familyCode = localStorage.getItem(FAMILY_KEY) || null;
-var syncReady = false;
-var applyingRemote = false; // évite les boucles save → remote → save
-
-var state={meals:{},checked:{},people:2,favs:[],appliances:["four","plaques"]};
-try{
-  var raw=localStorage.getItem(KEY);
-  if(raw){
-    var p=JSON.parse(raw);
-    if(p&&p.meals)state=p;
-    if(!state.checked)state.checked={};
-    if(!state.people)state.people=2;
-    if(!state.favs)state.favs=[];
-    if(!state.appliances)state.appliances=["four","plaques"];
-  }
-}catch(e){}
+var db=firebase.database();
+var auth=firebase.auth();
+var familyCode=localStorage.getItem(FAMILY_KEY)||null;
+var syncReady=false,applyingRemote=false,authReady=false;
 
 function save(){
   try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
-  if(syncReady && familyCode && !applyingRemote){
-    db.ref("families/"+familyCode+"/data").set(state).catch(function(err){
-      console.warn("Sync write error", err);
-      toast("Erreur de synchronisation");
-    });
+  if(syncReady&&familyCode&&!applyingRemote){
+    try{
+      db.ref("families/"+familyCode+"/data").set(state).catch(function(err){
+        console.warn("Sync write error",err);toast("Erreur de synchronisation");
+      });
+    }catch(e){console.warn(e);toast("Synchronisation impossible");}
   }
 }
-
 function generateFamilyCode(){
-  var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  var code="";
-  for(var i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",code="";
+  for(var i=0;i<6;i++)code+=chars[Math.floor(Math.random()*chars.length)];
   return code;
 }
-
 function startSync(code){
-  if(!authReady && !auth.currentUser){
+  if(!authReady&&!auth.currentUser){
     toast("Connexion en cours… réessaie dans 2 secondes");
-    setTimeout(function(){ startSync(code); }, 1500);
+    setTimeout(function(){startSync(code);},1500);
     return;
   }
-  code = String(code||"").trim().toUpperCase();
+  code=String(code||"").trim().toUpperCase();
   if(!code){toast("Code invalide");return;}
-
-  familyCode = code;
-  localStorage.setItem(FAMILY_KEY, code);
-  syncReady = true;
-
-  // Écoute en temps réel
-  db.ref("families/"+code+"/data").off(); // évite les doubles listeners
-  db.ref("families/"+code+"/data").on("value", function(snap){
-    var remote = snap.val();
+  familyCode=code;
+  localStorage.setItem(FAMILY_KEY,code);
+  syncReady=true;
+  db.ref("families/"+code+"/data").off();
+  db.ref("families/"+code+"/data").on("value",function(snap){
+    var remote=snap.val();
     if(!remote){
-      // Première fois : on pousse l’état local
-      db.ref("families/"+code+"/data").set(state).then(function(){
-        toast("Espace créé · code "+code);
-      }).catch(function(err){
-        console.warn(err);
-        toast("Erreur écriture : "+(err.message||err.code||""));
-      });
+      db.ref("families/"+code+"/data").set(state).then(function(){toast("Espace créé · code "+code);})
+        .catch(function(err){console.warn(err);toast("Erreur écriture : "+(err.message||err.code||""));});
       return;
     }
-    // On applique les données distantes
-    applyingRemote = true;
-    state = remote;
-    if(!state.checked)state.checked={};
-    if(!state.people)state.people=2;
-    if(!state.favs)state.favs=[];
-    if(!state.appliances)state.appliances=["four","plaques"];
+    remote=normState(remote);
+    if(sig(remote)===sig(state))return; /* écho de nos propres modifications */
+    applyingRemote=true;
+    state=remote;
     try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
-    applyingRemote = false;
+    applyingRemote=false;
     render();
-  }, function(err){
-    console.warn("Sync listen error", err);
+  },function(err){
+    console.warn("Sync listen error",err);
     toast("Impossible de synchroniser : "+(err.message||err.code||""));
   });
 }
-
 function leaveFamily(){
-  if(familyCode){
-    db.ref("families/"+familyCode+"/data").off();
-  }
-  familyCode = null;
+  if(familyCode)db.ref("families/"+familyCode+"/data").off();
+  familyCode=null;
   localStorage.removeItem(FAMILY_KEY);
-  syncReady = false;
+  syncReady=false;
   toast("Synchronisation désactivée");
   render();
 }
-
-function openSyncSheet(){
-  aiS.view = "sync";
-  aiShow();
-  aiPanel.replaceChildren();
-  aiPanel.appendChild(el("h3","","Synchronisation"));
-  
-  if(familyCode){
-    aiPanel.appendChild(el("p","hint","Les deux téléphones partagent le même menu."));
-    aiPanel.appendChild(el("p","","Code famille :"));
-    var codeBox = el("div","");
-    codeBox.style.cssText = "font-size:28px;font-weight:800;letter-spacing:4px;text-align:center;padding:16px;background:var(--bg);border-radius:12px;margin:8px 0 16px";
-    codeBox.textContent = familyCode;
-    aiPanel.appendChild(codeBox);
-    
-    var copyBtn = el("button","btn main","Copier le code");
-    copyBtn.type="button";
-    copyBtn.style.width="100%";
-    copyBtn.addEventListener("click", function(){
-      navigator.clipboard.writeText(familyCode).then(function(){toast("Code copié");}).catch(function(){toast("Copie impossible");});
-    });
-    aiPanel.appendChild(copyBtn);
-    
-    var leaveBtn = el("button","btn warn","Quitter ce partage");
-    leaveBtn.type="button";
-    leaveBtn.style.width="100%";
-    leaveBtn.style.marginTop="10px";
-    leaveBtn.addEventListener("click", function(){
-      if(confirm("Arrêter la synchronisation sur cet appareil ?")){
-        leaveFamily();
-        aiClose();
-      }
-    });
-    aiPanel.appendChild(leaveBtn);
-  } else {
-    aiPanel.appendChild(el("p","hint","Crée un code pour partager le menu avec un autre téléphone, ou rejoins un code existant."));
-    
-    var createBtn = el("button","btn main","Créer un nouveau code famille");
-    createBtn.type="button";
-    createBtn.style.width="100%";
-    createBtn.style.marginBottom="16px";
-    createBtn.addEventListener("click", function(){
-      var code = generateFamilyCode();
-      startSync(code);
-      toast("Code créé : "+code);
-      openSyncSheet(); // rafraîchit l’affichage
-    });
-    aiPanel.appendChild(createBtn);
-    
-    aiPanel.appendChild(el("label","","Rejoindre avec un code"));
-    var inp = document.createElement("input");
-    inp.type="text";
-    inp.id="sync-code";
-    inp.placeholder="Ex. : A7K9P2";
-    inp.style.textTransform="uppercase";
-    inp.maxLength=6;
-    aiPanel.appendChild(inp);
-    
-    var joinBtn = el("button","btn main","Rejoindre");
-    joinBtn.type="button";
-    joinBtn.style.width="100%";
-    joinBtn.style.marginTop="10px";
-    joinBtn.addEventListener("click", function(){
-      var code = (inp.value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
-      if(code.length < 4){toast("Code trop court");return;}
-      startSync(code);
-      toast("Connecté au code "+code);
-      aiClose();
-      render();
-    });
-    aiPanel.appendChild(joinBtn);
-  }
-  
-  aiFoot.replaceChildren();
-  var closeB = el("button","btn","Fermer");
-  closeB.type="button";
-  closeB.addEventListener("click", aiClose);
-  aiFoot.appendChild(closeB);
-  aiFoot.hidden = false;
-}
-
-/* Auth anonyme au démarrage */
-var authReady = false;
 auth.onAuthStateChanged(function(user){
   if(user){
-    authReady = true;
-    console.log("Firebase auth OK", user.uid);
-    if(familyCode && !syncReady) startSync(familyCode);
+    authReady=true;
+    if(familyCode&&!syncReady)startSync(familyCode);
   }
 });
 auth.signInAnonymously().catch(function(err){
-  console.warn("Auth error", err);
+  console.warn("Auth error",err);
   toast("Connexion cloud impossible : "+(err.message||err.code||"erreur"));
 });
 
+/* ---------- données de profil ---------- */
+var APPLIANCES=[
+  {id:"four",label:"Four"},
+  {id:"plaques",label:"Plaques de cuisson"},
+  {id:"airfryer",label:"Air fryer"},
+  {id:"monsieur",label:"Monsieur Cuisine / Thermomix"},
+  {id:"multicuiseur",label:"Multicuiseur"},
+  {id:"grill",label:"Grill / Plancha"},
+  {id:"microondes",label:"Micro-ondes"}
+];
+var WISHES=[["healthy","Healthy"],["rapide","Rapide et facile"],["famille","En famille"],["veggie","Végétarien"],["budget","Petit budget"],["proteines","Riche en protéines"]];
+function applianceLabels(){return state.appliances.map(function(id){var a=APPLIANCES.find(function(x){return x.id===id;});return a?a.label:id;});}
+function wishLabels(){return state.profile.wishes.map(function(id){var w=WISHES.find(function(x){return x[0]===id;});return w?w[1]:id;});}
+function profileText(){
+  var t="";
+  var ap=applianceLabels();
+  if(ap.length)t+=" Appareils de cuisine disponibles : "+ap.join(", ")+" (n’utilise pas d’autres appareils ; précise l’appareil, la température et la durée quand c’est utile).";
+  var wi=wishLabels();
+  if(wi.length)t+=" Envies : "+wi.join(", ")+".";
+  if(state.profile.avoid.length)t+=" Ingrédients à éviter absolument : "+state.profile.avoid.join(", ")+".";
+  return t;
+}
+function toggleIn(arr,v){var i=arr.indexOf(v);if(i>-1)arr.splice(i,1);else arr.push(v);}
 
-var tab="home",editKey=null;
-var view=document.getElementById("view");
-var today=(new Date().getDay()+6)%7;
-
-function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
-
+/* ---------- semaine ---------- */
 function ingCount(m){return m&&m.ing?m.ing.split("\n").filter(function(l){return l.trim();}).length:0;}
-
+function freeSlots(){
+  var out=[];
+  for(var d=0;d<7;d++)SLOTS.forEach(function(s){var k=d+"-"+s[0];if(!(state.meals[k]&&state.meals[k].name))out.push(k);});
+  return out;
+}
+function slotRow(i,s,label){
+  var key=i+"-"+s[0],m=state.meals[key],has=!!(m&&m.name);
+  var b=el("button","slot");b.type="button";
+  b.appendChild(el("span","ico2",SLOT_ICO[s[0]]||"🍽"));
+  var tx=el("span","txt");
+  tx.appendChild(el("span","when",s[1]));
+  tx.appendChild(el("span","what"+(has?"":" empty"),has?m.name:"Ajouter un repas"));
+  if(has&&ingCount(m))tx.appendChild(el("small","",ingCount(m)+" ingrédient"+(ingCount(m)>1?"s":"")+(m.people?" · "+m.people+" pers.":"")));
+  b.appendChild(tx);
+  b.appendChild(el("span","go",has?"›":"+"));
+  b.addEventListener("click",function(){openSheet(key,label+", "+s[1].toLowerCase());});
+  var wrap=el("div","slotwrap");wrap.appendChild(b);
+  if(has&&(ingCount(m)||(m.steps&&m.steps.trim()))){
+    var rb=el("button","recbtn","Recette");rb.type="button";
+    rb.addEventListener("click",function(){aiOpenMeal(key);});
+    wrap.appendChild(rb);
+  }
+  return wrap;
+}
+function daySection(i){
+  var t=todayIdx();
+  var card=el("section","day"+(i===t?" today":"")+(i<t?" past":""));
+  var head=el("div","dayhead");
+  if(i===t)head.appendChild(el("span","pill","Aujourd’hui"));
+  head.appendChild(el("h2","",DAYS[i]));
+  card.appendChild(head);
+  SLOTS.forEach(function(s){card.appendChild(slotRow(i,s,DAYS[i]));});
+  return card;
+}
 function renderWeek(){
   view.replaceChildren();
-  DAYS.forEach(function(d,i){
-    var card=el("section","day"+(i===today?" today":""));
-    card.appendChild(el("h2","",d+(i===today?" (aujourd’hui)":"")));
-    SLOTS.forEach(function(s){
-      var key=i+"-"+s[0],m=state.meals[key];
-      var b=el("button","slot");b.type="button";
-      b.appendChild(el("span","when",s[1]));
-      var w=el("span","what"+(m&&m.name?"":" empty"),m&&m.name?m.name:"Ajouter un repas");
-      if(m&&m.name&&ingCount(m)){w.appendChild(el("small","",ingCount(m)+" ingrédient"+(ingCount(m)>1?"s":"")+(m.people?", "+m.people+" pers.":"")));}
-      b.appendChild(w);
-      b.addEventListener("click",function(){openSheet(key,d+", "+s[1].toLowerCase());});
-      var wrap=el("div","slotwrap");wrap.appendChild(b);
-      if(m&&m.name&&(ingCount(m)||(m.steps&&m.steps.trim()))){
-        var rb=el("button","recbtn","Recette");rb.type="button";
-        rb.addEventListener("click",function(){aiOpenMeal(key);});
-        wrap.appendChild(rb);
-      }
-      card.appendChild(wrap);
-    });
-    view.appendChild(card);
+  var free=freeSlots().length;
+  var cta=el("button","cta");cta.type="button";
+  cta.appendChild(el("span","em","✨"));
+  var ct=el("span","ct");
+  ct.appendChild(el("b","","Composer ma semaine"));
+  ct.appendChild(el("small","",free?free+" créneau"+(free>1?"x":"")+" libre"+(free>1?"s":"")+" · l’IA s’occupe du reste":"Tous les créneaux sont remplis"));
+  cta.appendChild(ct);cta.appendChild(el("span","go","›"));
+  cta.addEventListener("click",function(){if(!free){toast("Aucun créneau libre");return;}aiOpenFill();});
+  view.appendChild(cta);
+  DAYS.forEach(function(d,i){view.appendChild(daySection(i));});
+  var clr=el("button","btn warn ghost","Vider la semaine");clr.type="button";clr.style.width="100%";clr.style.marginTop="6px";
+  clr.addEventListener("click",function(){
+    if(!Object.keys(state.meals).length){toast("La semaine est déjà vide");return;}
+    if(confirm("Vider tous les repas de la semaine ?")){state.meals={};state.checked={};save();renderWeek();toast("Semaine vidée");}
   });
+  view.appendChild(clr);
 }
 
+/* ---------- liste de courses ---------- */
 var RX=/^(\d+(?:[.,]\d+)?|\d\/\d|[½¼¾])\s*(kg|g|l|ml|cl)?\s+(?:de\s+|d’|d')?(.+)$/i;
 function toNum(x){var F={"½":.5,"¼":.25,"¾":.75};if(F[x])return F[x];if(x.indexOf("/")>0){var a=x.split("/");return (+a[0])/(+a[1]||1);}return parseFloat(String(x).replace(",","."))||0;}
-
 function buildList(){
   var map={};
   Object.keys(state.meals).forEach(function(k){
@@ -436,6 +447,11 @@ function fmt(it){
   var s=String(q).replace(".",",");
   if(u&&!/^(de |d’|d')/i.test(it.name))return s+" "+u+" "+(/^(h(?!aricot|achis|omard|arissa|alloumi|oumous|ot)|[aeiouyàâäéèêëîïôöùûü])/i.test(it.name)?"d’":"de ")+it.name;
   return s+(u?" "+u:"")+" "+it.name;
+}
+function listStats(){
+  var items=buildList();
+  var done=items.filter(function(it){return state.checked[ck(it.id)];}).length;
+  return {items:items,total:items.length,done:done,left:items.length-done};
 }
 
 var AISLES=["Fruits et légumes","Viandes et poissons","Produits frais","Épicerie","Boulangerie","Boissons","Autres"];
@@ -467,17 +483,20 @@ function parseLine(line){
   return {id:n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")+"|"+u,name:n,unit:u,q:q};
 }
 function syncChecks(id){
-  var on=!!state.checked[id];
+  var on=!!state.checked[ck(id)];
   Array.prototype.forEach.call(view.querySelectorAll(".row"),function(r){
     if(r.dataset.id===id){r.classList.toggle("done",on);var c=r.querySelector("input");if(c)c.checked=on;}
   });
   Array.prototype.forEach.call(view.querySelectorAll(".mcard"),function(c){if(c._upd)c._upd();});
+  var s=listStats(),pr=view.querySelector(".prog i"),pl=view.querySelector("#prog-label");
+  if(pr)pr.style.width=(s.total?Math.round(100*s.done/s.total):0)+"%";
+  if(pl)pl.textContent=s.left+" article"+(s.left>1?"s":"")+" restant"+(s.left>1?"s":"")+" sur "+s.total;
 }
 function ingRow(id,text){
-  var row=el("label","row"+(state.checked[id]?" done":""));row.dataset.id=id;
-  var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state.checked[id];
+  var row=el("label","row"+(state.checked[ck(id)]?" done":""));row.dataset.id=id;
+  var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state.checked[ck(id)];
   cb.addEventListener("change",function(){
-    if(cb.checked)state.checked[id]=1;else delete state.checked[id];
+    if(cb.checked)state.checked[ck(id)]=1;else delete state.checked[ck(id)];
     save();syncChecks(id);
   });
   row.appendChild(cb);row.appendChild(el("span","",text));return row;
@@ -508,7 +527,7 @@ function renderListMeals(){
     card.appendChild(head);
     var body=el("div","mbody");body.hidden=!openMeals[e.key];
     function upd(){
-      var n=lines.filter(function(l){return state.checked[l.id];}).length;
+      var n=lines.filter(function(l){return state.checked[ck(l.id)];}).length;
       cnt.textContent=lines.length?(n+"/"+lines.length+" cochés"):"Aucun ingrédient";
     }
     card._upd=upd;upd();
@@ -525,8 +544,13 @@ function renderListMeals(){
 }
 function renderList(){
   view.replaceChildren();
-  var items=buildList();
+  var S=listStats(),items=S.items;
   if(!items.length){view.appendChild(el("p","note","Ajoute des ingrédients à tes repas : la liste se remplit toute seule."));return;}
+  var sum=el("div","card");
+  var lb=el("b","","");lb.id="prog-label";lb.textContent=S.left+" article"+(S.left>1?"s":"")+" restant"+(S.left>1?"s":"")+" sur "+S.total;
+  sum.appendChild(lb);
+  var pg=el("div","prog");var pi=document.createElement("i");pi.style.width=Math.round(100*S.done/S.total)+"%";pg.appendChild(pi);sum.appendChild(pg);
+  view.appendChild(sum);
   var mode=state.listMode==="meal"?"meal":"aisle";
   var tabs=el("div","tabs");tabs.setAttribute("role","tablist");
   [["aisle","Par rayon"],["meal","Par repas"]].forEach(function(x){
@@ -536,15 +560,14 @@ function renderList(){
   });
   view.appendChild(tabs);
   var bar=el("div","bar");
-  var c=el("button","btn main","Copier la liste");c.type="button";
+  var c=el("button","btn main","Copier la liste");c.type="button";c.style.flex="1 1 100%";
   var all=el("button","btn","Tout cocher");all.type="button";
   var r=el("button","btn","Tout décocher");r.type="button";
   c.addEventListener("click",copyList);
-  all.addEventListener("click",function(){items.forEach(function(it){state.checked[it.id]=1;});save();renderList();});
+  all.addEventListener("click",function(){items.forEach(function(it){state.checked[ck(it.id)]=1;});save();renderList();});
   r.addEventListener("click",function(){state.checked={};save();renderList();});
   bar.appendChild(c);bar.appendChild(all);bar.appendChild(r);view.appendChild(bar);
   if(mode==="meal"){renderListMeals();return;}
-
   var last="";
   items.sort(function(a,b){var x=aisle(a.name),y=aisle(b.name);return x!==y?AISLES.indexOf(x)-AISLES.indexOf(y):a.name.localeCompare(b.name,"fr");});
   items.forEach(function(it){
@@ -553,7 +576,7 @@ function renderList(){
   });
 }
 function copyList(){
-  var txt=buildList().filter(function(it){return !state.checked[it.id];}).map(function(it){return "- "+fmt(it);}).join("\n");
+  var txt=buildList().filter(function(it){return !state.checked[ck(it.id)];}).map(function(it){return "- "+fmt(it);}).join("\n");
   var done=function(ok){toast(ok?"Liste copiée":"Copie impossible");};
   try{navigator.clipboard.writeText(txt).then(function(){done(true);},function(){done(false);});}catch(e){done(false);}
 }
@@ -561,9 +584,10 @@ function copyList(){
 var tt;function toast(t){
   var n=document.getElementById("toast");
   n.textContent=t;n.classList.add("show");
-  clearTimeout(tt);tt=setTimeout(function(){n.classList.remove("show");},2000);
+  clearTimeout(tt);tt=setTimeout(function(){n.classList.remove("show");},2200);
 }
 
+/* ---------- fiche repas ---------- */
 var sheet=document.getElementById("sheet");
 function openSheet(key,title){
   editKey=key;var m=state.meals[key]||{name:"",ing:""};
@@ -596,7 +620,7 @@ document.getElementById("f-clear").addEventListener("click",function(){
   if(!state.meals[editKey]){closeSheet();return;}
   if(confirm("Vider ce repas ?")){delete state.meals[editKey];save();closeSheet();render();}
 });
-/* La fenêtre ne se ferme plus en touchant la zone grisée : seulement via Fermer / Enregistrer */
+/* La fenêtre ne se ferme plus en touchant la zone sombre : seulement via Fermer / Enregistrer */
 
 function decode(t){var n=document.createElement("textarea");n.innerHTML=t;return n.value;}
 document.getElementById("f-search").addEventListener("click",function(){
@@ -605,6 +629,7 @@ document.getElementById("f-search").addEventListener("click",function(){
   window.open("https://www.marmiton.org/recettes/recherche.aspx?aqt="+encodeURIComponent(q),"_blank","noopener");
 });
 
+/* ---------- idées (frigo + base de recettes) ---------- */
 var MEALDB="https://www.themealdb.com/api/json/v1/1/";
 function trList(list,from,to){
   var chunks=[],cur=[],len=0;
@@ -619,36 +644,8 @@ function trList(list,from,to){
       }).catch(function(){return c;});
   })).then(function(parts){return [].concat.apply([],parts);});
 }
-
-var ideas={q:"",list:null,loading:false,sel:{},preview:{},all:null,off:0,t:1};
-var SLOTS=[["m","Midi"],["s","Soir"]];
-
-var APPLIANCES=[
-  {id:"four",label:"Four"},
-  {id:"plaques",label:"Plaques de cuisson"},
-  {id:"airfryer",label:"Air fryer"},
-  {id:"monsieur",label:"Monsieur Cuisine / Thermomix"},
-  {id:"multicuiseur",label:"Multicuiseur"},
-  {id:"grill",label:"Grill / Plancha"},
-  {id:"microondes",label:"Micro-ondes"}
-];
-function appliancesText(){
-  if(!state.appliances||!state.appliances.length)return "";
-  var labels=state.appliances.map(function(id){
-    var a=APPLIANCES.find(function(x){return x.id===id;});
-    return a?a.label:id;
-  }).join(", ");
-  return " L'utilisateur dispose des appareils suivants : "+labels+". Privilégie des recettes réalisables avec ces appareils (ou sans appareil particulier).";
-}
-function toggleAppliance(id){
-  var i=state.appliances.indexOf(id);
-  if(i>-1)state.appliances.splice(i,1);else state.appliances.push(id);
-  save();
-}
-
-var LEVELS=["Faciles","Intermédiaires","Élaborées"];
+var ideas={q:"",chips:[],list:null,loading:false,sel:{},preview:{},all:null,off:0,t:1};
 var rawCache={};
-
 function getMeal(id){
   if(rawCache[id])return Promise.resolve(rawCache[id]);
   return fetch(MEALDB+"lookup.php?i="+encodeURIComponent(id))
@@ -657,8 +654,6 @@ function getMeal(id){
     .catch(function(){return null;});
 }
 function countIng(m){var n=0;for(var i=1;i<=20;i++)if((m["strIngredient"+i]||"").trim())n++;return n;}
-function levelOf(n){return n<=7?0:n<=12?1:2;}
-
 function api(p){
   return getMeal(p.id).then(function(m){
     if(!m)return {};
@@ -667,7 +662,6 @@ function api(p){
     return trList([m.strMeal].concat(lines),"en","fr").then(function(t){return {name:t[0],ingredients:t.slice(1)};});
   });
 }
-
 function nextFree(taken){
   for(var d=0;d<7;d++){
     for(var j=SLOTS.length-1;j>=0;j--){
@@ -677,12 +671,12 @@ function nextFree(taken){
   }
   return {day:0,slot:SLOTS[SLOTS.length-1][0]};
 }
-
 function terms(){return ideas.q.split(/[,;\n]+/).map(function(t){return t.trim();}).filter(Boolean).slice(0,4);}
+function syncQ(){ideas.q=ideas.chips.join(", ");}
 
 function searchIdeas(){
   var ts=terms();
-  if(!ts.length){toast("Saisis au moins un ingrédient");return;}
+  if(!ts.length){toast("Ajoute au moins un ingrédient");return;}
   ideas.loading=true;ideas.list=null;ideas.sel={};ideas.preview={};ideas.all=null;ideas.off=0;ideas.t=ts.length;renderIdeas();
   trList(ts,"fr","en").then(function(en){
     return Promise.all(en.map(function(t){
@@ -699,7 +693,6 @@ function searchIdeas(){
     ideasBatch();
   }).catch(function(){ideas.loading=false;ideas.list=[];renderIdeas();toast("Recherche impossible (réseau ou quota)");});
 }
-
 function ideasBatch(){
   var all=ideas.all||[];
   if(!all.length){ideas.list=[];ideas.loading=false;renderIdeas();return;}
@@ -712,10 +705,9 @@ function ideasBatch(){
     return trList(arr.map(function(a){return a.en;}),"en","fr").then(function(names){
       arr.forEach(function(a,i){a.name=names[i];a.cat=normCat(a.mc,a.name);a.t=ideas.t;});return arr;
     });
-  }).then(function(arr){ideas.list=arr;ideas.loading=false;renderIdeas();window.scrollTo(0,0);})
+  }).then(function(arr){ideas.list=arr;ideas.loading=false;renderIdeas();})
   .catch(function(){ideas.loading=false;ideas.list=[];renderIdeas();toast("Recherche impossible (réseau ou quota)");});
 }
-
 function addSelected(){
   var ids=Object.keys(ideas.sel);if(!ids.length)return;
   var keys={},dup=false,over=0;
@@ -728,35 +720,29 @@ function addSelected(){
     rs.forEach(function(x){
       if(!x.r||!x.r.ingredients)return;
       var s=ideas.sel[x.id];
-      state.meals[s.day+"-"+s.slot]={name:x.r.name,ing:x.r.ingredients.join("\n"),base:4,people:state.people||2};
+      state.meals[s.day+"-"+s.slot]={name:x.r.name,ing:x.r.ingredients.join("\n"),steps:"",base:4,people:state.people||2};
       n++;
     });
     save();ideas.sel={};go("week");toast(n+(n>1?" repas ajoutés":" repas ajouté"));
   }).catch(function(){toast("Ajout impossible");});
 }
-
 function autoFill(){
   var ids=Object.keys(ideas.sel);if(!ids.length)return;
   var taken={};
   Object.keys(ideas.sel).forEach(function(id){var s=ideas.sel[id];taken[s.day+"-"+s.slot]=1;});
   ids.forEach(function(id){
     var s=ideas.sel[id];
-    if(state.meals[s.day+"-"+s.slot]){
-    }else{
-      var f=nextFree(taken);
-      ideas.sel[id]=f;taken[f.day+"-"+f.slot]=1;
-    }
+    if(!state.meals[s.day+"-"+s.slot]){}
+    else{var f=nextFree(taken);ideas.sel[id]=f;taken[f.day+"-"+f.slot]=1;}
   });
   renderIdeas();
   toast("Créneaux mis à jour");
 }
-
 function sel(cls,opts,val,label,onch){
   var s=el("select");s.setAttribute("aria-label",label);
   opts.forEach(function(o){var op=document.createElement("option");op.value=o[0];op.textContent=o[1];if(String(o[0])===String(val))op.selected=true;s.appendChild(op);});
   s.addEventListener("change",function(){onch(s.value);});return s;
 }
-
 function loadPreview(id,container){
   if(ideas.preview[id]){container.textContent=ideas.preview[id];return;}
   container.textContent="Chargement…";
@@ -771,52 +757,61 @@ function loadPreview(id,container){
     });
   });
 }
-
+function collectFridge(){
+  var inp=document.getElementById("i-q");
+  if(inp&&inp.value.trim()){
+    inp.value.split(/[,;\n]+/).forEach(function(x){x=x.trim();if(x&&ideas.chips.indexOf(x)<0&&ideas.chips.length<12)ideas.chips.push(x);});
+    inp.value="";
+  }
+  syncQ();
+}
 function renderIdeas(){
   view.replaceChildren();
-  var lab=el("label","","Tes ingrédients, séparés par une virgule");lab.htmlFor="i-q";lab.style.marginTop="0";
-  var inp=document.createElement("input");inp.type="text";inp.id="i-q";inp.value=ideas.q;inp.placeholder="Ex. : poulet, tomate, riz";inp.autocomplete="off";
-  inp.addEventListener("input",function(){ideas.q=inp.value;});
-  inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();searchIdeas();}});
-  view.appendChild(lab);view.appendChild(inp);
-
-  /* Appareils actifs */
-  var appHint=el("p","hint");
-  if(state.appliances&&state.appliances.length){
-    var labels=state.appliances.map(function(id){var a=APPLIANCES.find(function(x){return x.id===id;});return a?a.label:id;});
-    appHint.textContent="Appareils : "+labels.join(" · ")+"  ·  ";
-    var mod=el("button","btn");mod.type="button";mod.textContent="Modifier";mod.style.flex="none";mod.style.padding="6px 12px";mod.style.fontSize="13px";
-    mod.addEventListener("click",openAppliancesSheet);
-    var wrap=el("div","bar");wrap.style.margin="4px 0 8px";wrap.appendChild(appHint);wrap.appendChild(mod);
-    view.appendChild(wrap);
-  }else{
-    appHint.textContent="Aucun appareil sélectionné — ";
-    var mod=el("button","btn");mod.type="button";mod.textContent="Choisir mes appareils";mod.style.flex="none";mod.style.padding="6px 12px";
-    mod.addEventListener("click",openAppliancesSheet);
-    var wrap=el("div","bar");wrap.style.margin="4px 0 8px";wrap.appendChild(appHint);wrap.appendChild(mod);
-    view.appendChild(wrap);
+  var card=el("section","card");
+  var h3=el("h3","");h3.appendChild(el("span","","🧊 Mon frigo"));card.appendChild(h3);
+  card.appendChild(el("p","hint","Ajoute ce qu’il te reste : l’IA compose des recettes qui l’utilisent en priorité."));
+  var chips=el("div","chips");chips.style.margin="12px 0";
+  function drawChips(){
+    chips.replaceChildren();
+    ideas.chips.forEach(function(t,i){
+      var c=el("button","chip",t);c.type="button";c.appendChild(el("span","x","×"));
+      c.addEventListener("click",function(){ideas.chips.splice(i,1);syncQ();drawChips();});
+      chips.appendChild(c);
+    });
+    chips.hidden=!ideas.chips.length;
   }
-
-  var bar=el("div","bar");bar.style.marginTop="10px";
-  var b1=el("button","btn main","Trouver des recettes");b1.type="button";b1.addEventListener("click",searchIdeas);
-  var b2=el("button","btn","Chercher sur Marmiton");b2.type="button";
+  drawChips();card.appendChild(chips);
+  var row=el("div","addrow");
+  var inp=document.createElement("input");inp.type="text";inp.id="i-q";inp.placeholder="Ex. : poulet, riz, courgette";inp.autocomplete="off";
+  var plus=el("button","btn","+");plus.type="button";plus.setAttribute("aria-label","Ajouter l’ingrédient");
+  function add(){collectFridge();drawChips();inp.focus();}
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();add();}});
+  plus.addEventListener("click",add);
+  row.appendChild(inp);row.appendChild(plus);card.appendChild(row);
+  var go1=el("button","btn main","Composer des recettes");go1.type="button";go1.style.width="100%";
+  go1.addEventListener("click",function(){collectFridge();if(!ideas.q){toast("Ajoute au moins un ingrédient");return;}aiOpen("ideas",ideas.q);});
+  card.appendChild(go1);
+  var bar=el("div","bar");bar.style.margin="10px 0 0";
+  var b1=el("button","btn","Base de recettes");b1.type="button";b1.addEventListener("click",function(){collectFridge();searchIdeas();});
+  var b2=el("button","btn","Marmiton");b2.type="button";
   b2.addEventListener("click",function(){
-    var q=terms().join(" ");if(!q){toast("Saisis au moins un ingrédient");return;}
+    collectFridge();var q=terms().join(" ");if(!q){toast("Ajoute au moins un ingrédient");return;}
     window.open("https://www.marmiton.org/recettes/recherche.aspx?aqt="+encodeURIComponent(q),"_blank","noopener");
   });
-  var b3=el("button","btn main","Chercher sur AI Hub");b3.type="button";
-  b3.addEventListener("click",function(){aiOpen("ideas",terms().join(", "));});
-  bar.appendChild(b1);bar.appendChild(b2);bar.appendChild(b3);view.appendChild(bar);
+  bar.appendChild(b1);bar.appendChild(b2);card.appendChild(bar);
+  view.appendChild(card);
 
-  /* Bouton génération aléatoire */
-  var randBar=el("div","bar");
-  var bRand=el("button","btn main","🎲 Générer des repas au hasard");bRand.type="button";
-  bRand.style.width="100%";
-  bRand.addEventListener("click",function(){
-    aiOpen("ideas","idées de repas variés et faciles pour le quotidien");
-  });
-  randBar.appendChild(bRand);
-  view.appendChild(randBar);
+  var surprise=el("button","cta");surprise.type="button";
+  surprise.appendChild(el("span","em","🎲"));
+  var st=el("span","ct");st.appendChild(el("b","","Surprends-moi"));st.appendChild(el("small","","Des idées au hasard, selon ton profil gourmand"));
+  surprise.appendChild(st);surprise.appendChild(el("span","go","›"));
+  surprise.addEventListener("click",function(){aiOpen("ideas","",true);});
+  view.appendChild(surprise);
+
+  var pf=el("button","chip","⚙️ Mon profil gourmand");pf.type="button";pf.style.marginBottom="6px";
+  pf.addEventListener("click",function(){openProfileSheet("close");});
+  view.appendChild(pf);
+
   if(ideas.loading){view.appendChild(el("p","note","Recherche en cours…"));return;}
   if(!ideas.list)return;
   if(!ideas.list.length){view.appendChild(el("p","note","Aucune recette trouvée. Essaie un ingrédient plus courant ou moins d’ingrédients."));return;}
@@ -825,36 +820,31 @@ function renderIdeas(){
   var addBtn=el("button","btn main","");addBtn.type="button";addBtn.addEventListener("click",addSelected);
   var autoBtn=el("button","btn","Remplir automatiquement les créneaux libres");autoBtn.type="button";autoBtn.addEventListener("click",autoFill);
   addbar.appendChild(addBtn);addbar.appendChild(autoBtn);
-
   function updateBar(){
     var n=Object.keys(ideas.sel).length;
     addbar.hidden=!n;
     addBtn.textContent="Ajouter "+n+(n>1?" recettes":" recette")+" au menu";
   }
-
   CATS.forEach(function(cat){
     var items=ideas.list.filter(function(a){return a.cat===cat;});
     if(!items.length)return;
     view.appendChild(el("h2","aisle",CATPL[cat]+" ("+items.length+")"));
     items.forEach(function(a){
       var on=!!ideas.sel[a.id];
-      var card=el("div","idea"+(on?" on":""));
+      var c2=el("div","idea"+(on?" on":""));
       var l=el("label","ichk");
       var cb=document.createElement("input");cb.type="checkbox";cb.checked=on;
       var tx=el("span","",a.name);
       tx.appendChild(el("small","",a.n+" ingrédients"+(a.t>1?", "+a.hits+" sur "+a.t+" de tes ingrédients":"")));
-      l.appendChild(cb);l.appendChild(tx);card.appendChild(l);
-
+      l.appendChild(cb);l.appendChild(tx);c2.appendChild(l);
       var prev=el("div","preview");prev.hidden=!on;
       if(on)loadPreview(a.id,prev);
-      card.appendChild(prev);
-
+      c2.appendChild(prev);
       var as=el("div","assign");as.hidden=!on;
       var cur=ideas.sel[a.id]||{day:0,slot:"s"};
       as.appendChild(sel("",DAYS.map(function(d,i){return [i,d];}),cur.day,"Jour",function(v){ideas.sel[a.id].day=+v;}));
       as.appendChild(sel("",SLOTS,cur.slot,"Repas",function(v){ideas.sel[a.id].slot=v;}));
-      card.appendChild(as);
-
+      c2.appendChild(as);
       cb.addEventListener("change",function(){
         if(cb.checked){
           var taken={};Object.keys(ideas.sel).forEach(function(i){taken[ideas.sel[i].day+"-"+ideas.sel[i].slot]=1;});
@@ -864,103 +854,112 @@ function renderIdeas(){
           as.appendChild(sel("",SLOTS,f.slot,"Repas",function(v){ideas.sel[a.id].slot=v;}));
           prev.hidden=false;loadPreview(a.id,prev);
         }else{delete ideas.sel[a.id];prev.hidden=true;}
-        as.hidden=!cb.checked;card.classList.toggle("on",cb.checked);updateBar();
+        as.hidden=!cb.checked;c2.classList.toggle("on",cb.checked);updateBar();
       });
-      view.appendChild(card);
+      view.appendChild(c2);
     });
   });
   if(ideas.all&&ideas.all.length>18){
     var more=el("button","btn","↻ Autres propositions");more.type="button";more.style.width="100%";more.style.marginTop="8px";
     more.addEventListener("click",ideasBatch);view.appendChild(more);
   }else{
-    view.appendChild(el("p","note","Pas d’autres recettes pour ces ingrédients. Essaie « Chercher sur AI Hub » pour en générer."));
+    view.appendChild(el("p","note","Pas d’autres recettes pour ces ingrédients. Essaie « Composer des recettes » pour en générer avec l’IA."));
   }
   view.appendChild(addbar);updateBar();
 }
 
-var TITLES={week:"Repas",idea:"Idées",list:"Courses"};
-var ROUTES={"":"home","repas":"week","idees":"idea","courses":"list"};
-var ICONS={
- week:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="10" width="34" height="31" rx="5"/><path d="M7 20h34M16 6v8M32 6v8M17 29h4M27 29h4M17 35h4"/></svg>',
- idea:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 6a12 12 0 0 0-7 21.8V33h14v-5.2A12 12 0 0 0 24 6z"/><path d="M18 39h12M20 43h8"/></svg>',
- list:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18h36l-4 20a3 3 0 0 1-3 2.5H13a3 3 0 0 1-3-2.5L6 18z"/><path d="M16 18l6-10M32 18l-6-10M19 26v8M29 26v8"/></svg>'
-};
-function go(t){location.hash={home:"",week:"repas",idea:"idees",list:"courses"}[t];}
-function route(){tab=ROUTES[location.hash.replace("#","")]||"home";render();window.scrollTo(0,0);view.classList.remove("enter");void view.offsetWidth;view.classList.add("enter");}
-window.addEventListener("hashchange",route);
-
-function render(){
-  var top=document.getElementById("top");top.replaceChildren();
-  if(tab==="home"){top.appendChild(el("h1","","Menu de la semaine"));renderHome();return;}
-  var back=el("button","back","‹ Accueil");back.type="button";back.addEventListener("click",function(){go("home");});
-  top.appendChild(back);top.appendChild(el("h1","",TITLES[tab]));
-  if(tab==="week")renderWeek();else if(tab==="idea")renderIdeas();else renderList();
+/* ---------- accueil ---------- */
+function mini(em,title,sub,fn){
+  var b=el("button","mini");b.type="button";
+  b.appendChild(el("span","em",em));b.appendChild(el("b","",title));b.appendChild(el("span","s",sub));
+  b.addEventListener("click",fn);return b;
 }
-
+function kv(k,v){var r=el("div","kv");r.appendChild(el("span","",k));r.appendChild(el("span","",v));return r;}
 function renderHome(){
   view.replaceChildren();
+  view.appendChild(daySection(todayIdx()));
   var meals=Object.keys(state.meals).filter(function(k){return state.meals[k]&&state.meals[k].name;}).length;
-  var n=buildList().length;
-  var checked=Object.keys(state.checked).length;
+  var S=listStats();
+  var duo=el("div","duo");
+  duo.appendChild(mini("📅",meals+" repas",meals?"planifiés cette semaine":"Planifier la semaine",function(){go("week");}));
+  duo.appendChild(mini("🛒",S.left+" article"+(S.left>1?"s":""),S.total?(S.left?"à acheter":"liste terminée ✓"):"liste automatique",function(){go("list");}));
+  view.appendChild(duo);
+  var duo2=el("div","duo");
+  duo2.appendChild(mini("🎲","Surprends-moi","Idées au hasard",function(){aiOpen("ideas","",true);}));
+  duo2.appendChild(mini("🧊","Mon frigo","Cuisiner mes restes",function(){go("idea");}));
+  view.appendChild(duo2);
 
-  var stats=el("div","stats");
-  var s1=el("div","stat");s1.appendChild(el("strong","",String(meals)));s1.appendChild(el("span","","repas"));
-  var s2=el("div","stat");s2.appendChild(el("strong","",String(n)));s2.appendChild(el("span","","articles"));
-  var s3=el("div","stat");s3.appendChild(el("strong","",String(Math.max(0,n-checked))));s3.appendChild(el("span","","restants"));
-  stats.appendChild(s1);stats.appendChild(s2);stats.appendChild(s3);view.appendChild(stats);
+  var card=el("section","card");
+  var h=el("h3","");h.appendChild(el("span","","Mon profil gourmand"));
+  var pen=el("button","chip","✎ Modifier");pen.type="button";pen.addEventListener("click",function(){openProfileSheet("close");});
+  h.appendChild(pen);card.appendChild(h);
+  card.appendChild(kv("Personnes",String(state.people)));
+  card.appendChild(kv("Matériel",applianceLabels().join(" · ")||"—"));
+  card.appendChild(kv("Envies",wishLabels().join(" · ")||"—"));
+  card.appendChild(kv("À éviter",state.profile.avoid.join(" · ")||"—"));
+  view.appendChild(card);
 
-  /* ----- Résumé du jour ----- */
-  var todayBox=el("section","day today");
-  todayBox.appendChild(el("h2","","Aujourd’hui · "+DAYS[today]));
-  SLOTS.forEach(function(s){
-    var key=today+"-"+s[0],m=state.meals[key];
-    var b=el("button","slot");b.type="button";
-    b.appendChild(el("span","when",s[1]));
-    var w=el("span","what"+(m&&m.name?"":" empty"),m&&m.name?m.name:"Rien de prévu");
-    if(m&&m.name&&ingCount(m)){w.appendChild(el("small","",ingCount(m)+" ingrédient"+(ingCount(m)>1?"s":"")+(m.people?", "+m.people+" pers.":"")));}
-    b.appendChild(w);
-    b.addEventListener("click",function(){openSheet(key,DAYS[today]+", "+s[1].toLowerCase());});
-    var wrap=el("div","slotwrap");wrap.appendChild(b);
-    if(m&&m.name&&(ingCount(m)||(m.steps&&m.steps.trim()))){
-      var rb=el("button","recbtn","Recette");rb.type="button";
-      rb.addEventListener("click",function(){aiOpenMeal(key);});
-      wrap.appendChild(rb);
-    }
-    todayBox.appendChild(wrap);
-  });
-  view.appendChild(todayBox);
-
-  /* ----- Navigation tiles ----- */
-  [["week","Repas",meals?meals+(meals>1?" repas planifiés":" repas planifié"):"Planifier la semaine"],
-   ["idea","Idées","Trouver des recettes avec tes ingrédients"],
-   ["list","Courses",n?(n-checked>0?(n-checked)+(n-checked>1?" articles à acheter":" article à acheter"):"Liste terminée"):"Liste générée automatiquement"]].forEach(function(t){
-    var b=el("button","tile");b.type="button";
-    var ic=el("span","ico");ic.innerHTML=ICONS[t[0]];
-    var tx=el("span","tt",t[1]);tx.appendChild(el("small","",t[2]));
-    b.appendChild(ic);b.appendChild(tx);
-    b.addEventListener("click",function(){go(t[0]);});
-    view.appendChild(b);
-  });
-
-  /* ----- Bouton appareils ----- */
-  var appBtn=el("button","btn");appBtn.type="button";appBtn.style.width="100%";appBtn.style.marginTop="8px";
-  var nApp=state.appliances?state.appliances.length:0;
-  appBtn.textContent="🍽 Mes appareils de cuisine ("+nApp+")";
-  appBtn.addEventListener("click",openAppliancesSheet);
-  view.appendChild(appBtn);
-
-  /* ----- Bouton synchronisation ----- */
-  var syncBtn=el("button","btn");syncBtn.type="button";syncBtn.style.width="100%";syncBtn.style.marginTop="8px";
-  if(familyCode){
-    syncBtn.textContent="🔄 Sync active · "+familyCode;
-    syncBtn.style.borderColor="var(--acc)";
-  }else{
-    syncBtn.textContent="🔄 Synchroniser entre téléphones";
-  }
+  var syncBtn=el("button","btn");syncBtn.type="button";syncBtn.style.width="100%";
+  syncBtn.textContent=familyCode?"🔄 Sync active · "+familyCode:"🔄 Synchroniser entre téléphones";
   syncBtn.addEventListener("click",openSyncSheet);
   view.appendChild(syncBtn);
 }
 
+/* ---------- navigation ---------- */
+var TITLES={
+  home:["Bonjour",function(){return dateStr();}],
+  week:["Vos repas","de la semaine"],
+  idea:["Qu’est-ce qu’on","mange ?"],
+  list:["Votre liste","de courses"]
+};
+var ROUTES={"":"home","repas":"week","idees":"idea","courses":"list"};
+var HASHES={home:"",week:"repas",idea:"idees",list:"courses"};
+var ICONS={
+ home:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 22 24 8l17 14"/><path d="M11 19v20a2 2 0 0 0 2 2h22a2 2 0 0 0 2-2V19"/><path d="M19 41V28h10v13"/></svg>',
+ week:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="10" width="34" height="31" rx="5"/><path d="M7 20h34M16 6v8M32 6v8M17 29h4M27 29h4M17 35h4"/></svg>',
+ idea:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 6a12 12 0 0 0-7 21.8V33h14v-5.2A12 12 0 0 0 24 6z"/><path d="M18 39h12M20 43h8"/></svg>',
+ list:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18h36l-4 20a3 3 0 0 1-3 2.5H13a3 3 0 0 1-3-2.5L6 18z"/><path d="M16 18l6-10M32 18l-6-10M19 26v8M29 26v8"/></svg>'
+};
+var NAV=[["home","Accueil"],["week","Repas"],["idea","Idées"],["list","Courses"]];
+function renderNav(){
+  nav.replaceChildren();
+  NAV.forEach(function(n){
+    var b=el("button","");b.type="button";b.setAttribute("aria-label",n[1]);
+    if(tab===n[0])b.setAttribute("aria-current","page");
+    var ic=el("span","");ic.innerHTML=ICONS[n[0]];ic.style.display="grid";
+    b.appendChild(ic);b.appendChild(el("span","",n[1]));
+    b.addEventListener("click",function(){go(n[0]);});
+    nav.appendChild(b);
+  });
+}
+function go(t){
+  var h=HASHES[t];
+  if(location.hash.replace("#","")===h)route();else location.hash=h;
+}
+function route(){
+  tab=ROUTES[location.hash.replace("#","")]||"home";
+  render();window.scrollTo(0,0);
+  view.classList.remove("enter");void view.offsetWidth;view.classList.add("enter");
+  if(tab==="week"){
+    setTimeout(function(){
+      var c=view.querySelector(".day.today");
+      if(c)window.scrollTo(0,Math.max(0,c.getBoundingClientRect().top+window.scrollY-90));
+    },80);
+  }
+}
+window.addEventListener("hashchange",route);
+function render(){
+  var top=document.getElementById("top");top.replaceChildren();
+  var t=TITLES[tab]||TITLES.home;
+  var h=el("h1","",t[0]);
+  var sub=typeof t[1]==="function"?t[1]():t[1];
+  if(sub)h.appendChild(el("span","gold",sub));
+  top.appendChild(h);
+  if(tab==="home")renderHome();else if(tab==="week")renderWeek();else if(tab==="idea")renderIdeas();else renderList();
+  renderNav();
+}
+
+/* ---------- import Marmiton ---------- */
 var PROXIES=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://api.codetabs.com/v1/proxy?quest="];
 function fetchPage(u,i){
   if(i>=PROXIES.length)return Promise.reject(new Error("no proxy"));
@@ -976,8 +975,6 @@ function parseRecipe(html){
   }catch(e){}}
   return out;
 }
-
-/* --- Brouillon automatique (au cas où l'app se recharge) --- */
 function saveDraft(){
   if(editKey==null)return;
   try{localStorage.setItem(DKEY,JSON.stringify({
@@ -990,8 +987,6 @@ function saveDraft(){
   document.getElementById(id).addEventListener("input",saveDraft);
 });
 document.addEventListener("visibilitychange",saveDraft);
-
-/* --- Import des ingrédients --- */
 document.getElementById("f-import").addEventListener("click",function(){
   var u=document.getElementById("f-url").value.trim();
   if(!/^https?:\/\//.test(u)){toast("Colle d’abord le lien d’une recette");return;}
@@ -1009,9 +1004,7 @@ document.getElementById("f-import").addEventListener("click",function(){
     document.getElementById("f-ing").focus();
   });
 });
-
-/* --- Bouton Coller (lit texte ET lien du presse-papiers) --- */
-document.getElementById("f-paste").addEventListener("click", async function(){
+document.getElementById("f-paste").addEventListener("click",async function(){
   var text="";
   try{
     if(navigator.clipboard.read){
@@ -1042,9 +1035,8 @@ document.getElementById("f-paste").addEventListener("click", async function(){
   }
 });
 
-
 /* ============================================================
-   CATÉGORIES + PASSERELLE AI HUB (v4 : rapide, par flux)
+   CATÉGORIES + PASSERELLE AI HUB (rapide, par flux)
    ============================================================ */
 var CATS=["Entrée","Plat","Dessert"],CATPL={"Entrée":"Entrées","Plat":"Plats","Dessert":"Desserts"};
 function catOfName(n){
@@ -1062,7 +1054,7 @@ function normCat(c,name){
 }
 function keyTitle(k){
   var p=k.split("-"),sl=SLOTS.filter(function(x){return x[0]===p[1];})[0];
-  return DAYS[+p[0]]+", "+(sl?sl[1].toLowerCase():"");
+  return DAYS[+p[0]]+(sl?", "+sl[1].toLowerCase():"");
 }
 function scaledLine(line,f){
   line=line.trim();var r=RX.exec(line);if(!r||f===1)return line;
@@ -1073,16 +1065,18 @@ function scaledLine(line,f){
 
 var AI_PROXY="https://ai-hub-proxy.pasquet-gregory.workers.dev";
 var AI_MODE="auto"; /* pour comparer la vitesse, essaie "gemini", "gemma" ou "ernie" */
-var aiS={ctx:"sheet",view:"search",q:"",items:[],running:0,catErr:{},err:"",detail:null,inDetail:false,dLoading:false,dName:"",dCat:"",mealKey:null,rl:0,rd:0,lctls:[],dctls:[]};
-var aiListCache={},aiDetailCache={},aiSeen={},aiRT=null,aiDaySel=null,aiSlotSel=null;
+var CUISINES=["française traditionnelle","italienne","asiatique","méditerranéenne","mexicaine","réconfortante de saison","légère et fraîche","du monde"];
+var aiS={ctx:"sheet",view:"search",from:"close",q:"",items:[],running:0,catErr:{},err:"",detail:null,inDetail:false,dLoading:false,dName:"",dCat:"",mealKey:null,fill:null,rl:0,rd:0,rf:0,lctls:[],dctls:[],fctls:[]};
+var aiListCache={},aiDetailCache={},aiSeen={},aiRT=null,aiFT=null,aiDaySel=null,aiSlotSel=null;
 var aiSheet=document.getElementById("aisheet"),aiPanel=document.getElementById("ai-panel"),aiFoot=document.getElementById("ai-foot");
 
 function aiAbort(bucket){bucket.splice(0).forEach(function(c){try{c.abort();}catch(e){}});}
+function aiAbortAll(){aiAbort(aiS.lctls);aiAbort(aiS.dctls);aiAbort(aiS.fctls);aiS.rl++;aiS.rd++;aiS.rf++;aiS.running=0;}
 
 /* Appel au proxy en flux : onText reçoit le texte au fur et à mesure */
 function aiStream(prompt,onText,bucket){
   var ctl=new AbortController();bucket.push(ctl);
-  var t=setTimeout(function(){ctl.abort();},70000);
+  var t=setTimeout(function(){ctl.abort();},80000);
   function done(){clearTimeout(t);var i=bucket.indexOf(ctl);if(i>-1)bucket.splice(i,1);}
   return fetch(AI_PROXY,{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({mode:AI_MODE,messages:[{role:"user",content:prompt}],stream:true}),signal:ctl.signal})
@@ -1127,7 +1121,7 @@ function aiObjs(text){
   }
   return out;
 }
-/* tableau complet d'une clé ("ingredients", "etapes") dans un JSON en cours d'arrivée */
+/* tableau complet d'une clé dans un JSON en cours d'arrivée */
 function aiArr(text,key){
   text=aiClean(text);
   var k=text.indexOf('"'+key+'"');if(k<0)return null;
@@ -1147,6 +1141,7 @@ function aiLine(x){
   if(x&&typeof x==="object")return Object.keys(x).map(function(k){return x[k];}).join(" ").trim();
   return "";
 }
+function stripNum(x){return String(x).replace(/^\s*\d+\s*[.)\-:]\s*/,"");}
 function aiTypeOf(q){
   var s=q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   if(/\bdesserts?\b/.test(s))return "Dessert";
@@ -1154,73 +1149,49 @@ function aiTypeOf(q){
   if(/\bplats?\b/.test(s))return "Plat";
   return "";
 }
-function aiListPrompt(q,cat,n,seen){
+function aiListPrompt(q,cat,n,seen,inspi){
   var what=cat==="Entrée"?"entrées":cat==="Dessert"?"desserts":"plats principaux";
-  return "Propose "+n+" idées de "+what+" pour cette demande : « "+q+" » (un nom de plat ou des ingrédients disponibles). "+
-    "Recettes variées et faciles. Pour une entrée ou un dessert, tu peux t’éloigner des ingrédients cités et proposer des classiques populaires. "+
-    appliancesText()+
-    (seen.length?"Ne propose surtout pas : "+seen.slice(-45).join(", ")+". ":"")+
-    "Réponds UNIQUEMENT avec un tableau JSON, sans texte autour ni markdown : "+
+  var base=q?"pour cette demande : « "+q+" » (un nom de plat ou des ingrédients disponibles). Pour une entrée ou un dessert, tu peux t’éloigner des ingrédients cités et proposer des classiques populaires."
+            :"au hasard, de saison ("+monthName()+"), inspiration "+inspi+".";
+  return "Propose "+n+" idées de "+what+" "+base+" Recettes variées et faciles."+
+    profileText()+
+    (seen.length?" Ne propose surtout pas : "+seen.slice(-45).join(", ")+".":"")+
+    " Réponds UNIQUEMENT avec un tableau JSON, sans texte autour ni markdown : "+
     '[{"nom":"Nom","description":"6 mots maximum","temps":"30 min"}]';
 }
 
+/* ---------- ouverture / fermeture ---------- */
 function aiShow(){aiSheet.classList.add("open");aiSheet.setAttribute("aria-hidden","false");aiPanel.scrollTop=0;}
-function aiOpen(ctx,q){
-  aiAbort(aiS.lctls);aiAbort(aiS.dctls);aiS.rl++;aiS.rd++;
-  aiS.ctx=ctx;aiS.view="search";aiS.q=q||"";aiS.err="";aiS.catErr={};aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.running=0;
-  aiS.items=(aiListCache[aiS.q.trim().toLowerCase()]||[]).slice();
+function aiOpen(ctx,q,auto){
+  aiAbortAll();
+  aiS.ctx=ctx;aiS.view="search";aiS.q=q||"";aiS.err="";aiS.catErr={};aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;
+  aiS.items=aiS.q.trim()?(aiListCache[aiS.q.trim().toLowerCase()]||[]).slice():[];
   aiShow();aiRender();
-  if(aiS.q.trim()&&!aiS.items.length)aiSearch(false);
+  var has=!!aiS.q.trim();
+  if((!has&&auto)||(has&&!aiS.items.length))aiSearch(false);
 }
 function aiOpenMeal(key){aiS.view="meal";aiS.mealKey=key;aiS.inDetail=false;aiShow();aiRender();}
+function openProfileSheet(from){aiS.from=from||"close";aiS.view="profile";aiS.inDetail=false;aiShow();aiRender();}
+function openAppliancesSheet(){openProfileSheet("close");}
+function openSyncSheet(){aiS.view="sync";aiS.inDetail=false;aiShow();aiRender();}
 function aiClose(){
-  aiAbort(aiS.lctls);aiAbort(aiS.dctls);aiS.rl++;aiS.rd++;aiS.running=0;
+  aiAbortAll();
   aiSheet.classList.remove("open");aiSheet.setAttribute("aria-hidden","true");
 }
-
-/* --- Feuille de sélection des appareils --- */
-function openAppliancesSheet(){
-  aiS.view="appliances"; // réutilise le panel AI pour simplicité
-  aiShow();
-  aiPanel.replaceChildren();
-  aiPanel.appendChild(el("h3","","Mes appareils de cuisine"));
-  aiPanel.appendChild(el("p","hint","Coche ceux que tu as. Les recettes générées en tiendront compte."));
-  APPLIANCES.forEach(function(a){
-    var row=el("label","row");
-    var cb=document.createElement("input");cb.type="checkbox";
-    cb.checked=state.appliances.indexOf(a.id)>-1;
-    cb.addEventListener("change",function(){
-      toggleAppliance(a.id);
-      // refresh count if needed
-    });
-    row.appendChild(cb);
-    row.appendChild(el("span","",a.label));
-    aiPanel.appendChild(row);
-  });
-  aiFoot.replaceChildren();
-  var done=el("button","btn main","Terminé");done.type="button";
-  done.addEventListener("click",function(){
-    aiClose();
-    if(tab==="home")render();
-    else if(tab==="idea")renderIdeas();
-  });
-  aiFoot.appendChild(done);
-  aiFoot.hidden=false;
-}
-
 function aiBack(){aiAbort(aiS.dctls);aiS.rd++;aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.err="";aiRender();}
 function aiResultsSoon(){if(aiRT)return;aiRT=setTimeout(function(){aiRT=null;aiRenderResults();},120);}
 
-/* 3 requêtes en parallèle (entrées, plats, desserts) : les résultats s'affichent dès qu'ils arrivent */
+/* ---------- recherche : 3 requêtes en parallèle ---------- */
 function aiSearch(more,cats){
-  var q=aiS.q.trim();
-  if(!q){toast("Saisis un plat ou des ingrédients");return;}
-  var key=q.toLowerCase();
+  var q=aiS.q.trim(),rnd=!q;
+  var key=rnd?"(hasard)":q.toLowerCase();
   aiAbort(aiS.lctls);
   var my=++aiS.rl;
-  var typed=aiTypeOf(q),plan=cats||(typed?[typed]:CATS.slice()),per=typed?10:5;
+  var typed=rnd?"":aiTypeOf(q),plan=cats||(typed?[typed]:CATS.slice());
+  function perOf(c){return rnd?({"Entrée":2,"Plat":4,"Dessert":2})[c]:(typed?10:5);}
+  var inspi=CUISINES[Math.floor(Math.random()*CUISINES.length)];
   var prev=aiS.items.slice(),added=[];
-  var seen=(more||cats)?(aiSeen[key]||[]):[];
+  var seen=(more||cats||rnd)?(aiSeen[key]||[]):[];
   if(!cats){aiS.items=[];aiS.catErr={};}else cats.forEach(function(c){delete aiS.catErr[c];});
   aiS.inDetail=false;aiS.err="";aiS.detail=null;aiS.running=plan.length;
   aiRender();
@@ -1235,7 +1206,7 @@ function aiSearch(more,cats){
   }
   function finish(){
     if(!aiS.items.length&&more&&prev.length){aiS.items=prev;aiS.catErr={};toast("Impossible de générer d’autres recettes");}
-    else if(aiS.items.length)aiListCache[key]=aiS.items.slice();
+    else if(aiS.items.length&&!rnd)aiListCache[key]=aiS.items.slice();
     aiSeen[key]=seen.concat(added);
     aiRenderResults();aiRenderFoot();
   }
@@ -1243,7 +1214,7 @@ function aiSearch(more,cats){
     var shown=0,tried=0;
     function once(){
       tried++;
-      return aiStream(aiListPrompt(q,cat,per,seen),function(txt){
+      return aiStream(aiListPrompt(q,cat,perOf(cat),seen,inspi),function(txt){
         if(my!==aiS.rl)return;
         var objs=aiObjs(txt);
         for(;shown<objs.length;shown++)addItem(objs[shown],cat);
@@ -1270,13 +1241,14 @@ function aiSearch(more,cats){
   });
 }
 
-/* détail : les ingrédients s'affichent dès qu'ils arrivent, puis les étapes */
+/* ---------- détail d'une recette ---------- */
 function aiDetail(name,cat){
   aiAbort(aiS.dctls);
   var my=++aiS.rd;aiS.dName=name;aiS.dCat=cat||"";aiS.err="";
-  if(aiDetailCache[name]){aiS.detail=aiDetailCache[name];aiS.dLoading=false;aiRender();return;}
+  var dk=name+"|"+applianceLabels().join("+");
+  if(aiDetailCache[dk]){aiS.detail=aiDetailCache[dk];aiS.dLoading=false;aiRender();return;}
   aiS.dLoading=true;aiS.detail=null;aiRender();
-  var prompt="Donne la recette « "+name+" » pour 4 personnes. "+appliancesText()+" Réponds UNIQUEMENT avec un objet JSON, sans texte autour ni markdown, dans cet ordre : "+
+  var prompt="Donne la recette « "+name+" » pour 4 personnes."+profileText()+" Réponds UNIQUEMENT avec un objet JSON, sans texte autour ni markdown, dans cet ordre : "+
     '{"personnes":4,"ingredients":["400 g de pâtes","3 tomates","1 oignon"],"etapes":["Première étape","Deuxième étape"]}. '+
     "Chaque ingrédient sur une chaîne, la quantité d’abord puis l’ingrédient, avec les unités g, kg, ml, cl ou l. Étapes courtes (une phrase), 8 au maximum.";
   function build(txt){
@@ -1284,7 +1256,7 @@ function aiDetail(name,cat){
     var st=aiArr(txt,"etapes"),pm=/"personnes"\s*:\s*"?(\d+)/.exec(txt);
     return {nom:name,cat:normCat(cat,name),personnes:Math.max(1,pm?parseInt(pm[1],10):4),
       ing:ing.map(aiLine).filter(Boolean),
-      steps:(st||[]).map(aiLine).map(function(x){return x.replace(/^\s*\d+\s*[.)\-:]\s*/,"");}).filter(Boolean),
+      steps:(st||[]).map(aiLine).map(stripNum).filter(Boolean),
       partial:!st};
   }
   var tried=0;
@@ -1300,7 +1272,7 @@ function aiDetail(name,cat){
     },aiS.dctls).then(function(txt){
       if(my!==aiS.rd)return;
       var d=build(txt);if(!d)throw new Error("Recette illisible, réessaie");
-      d.partial=false;aiDetailCache[name]=d;aiS.detail=d;aiS.dLoading=false;aiRender(true);
+      d.partial=false;aiDetailCache[dk]=d;aiS.detail=d;aiS.dLoading=false;aiRender(true);
     }).catch(function(e){
       if(my!==aiS.rd)return;
       if(!aiS.detail&&tried<2)return once();
@@ -1313,6 +1285,7 @@ function aiDetail(name,cat){
   });
 }
 
+/* ---------- favoris & ajout ---------- */
 function isFav(nom){return state.favs.some(function(f){return f.nom===nom;});}
 function toggleFav(d){
   if(isFav(d.nom))state.favs=state.favs.filter(function(f){return f.nom!==d.nom;});
@@ -1331,12 +1304,68 @@ function aiUse(){
 function aiAddToMenu(day,slot){
   var d=aiS.detail;if(!d)return;
   var k=day+"-"+slot;
-  if(state.meals[k]&&!confirm("Ce créneau est déjà rempli. Le remplacer ?"))return;
+  if(state.meals[k]&&state.meals[k].name&&!confirm("Ce créneau est déjà rempli. Le remplacer ?"))return;
   state.meals[k]={name:d.nom,ing:d.ing.join("\n"),steps:stepsText(d),base:d.personnes,people:state.people||2};
-  save();aiClose();go("week");toast("Repas ajouté au menu");
+  save();aiClose();go("week");toast("Repas ajouté à ta semaine");
 }
 function aiEditMeal(){var k=aiS.mealKey;aiClose();openSheet(k,keyTitle(k));}
 
+/* ---------- composer ma semaine ---------- */
+function aiOpenFill(){
+  aiAbortAll();
+  var free=freeSlots();
+  aiS.view="fill";aiS.inDetail=false;
+  aiS.fill={free:free,n:Math.min(free.length,6),status:"setup",targets:[],assigned:{},pending:[],done:0};
+  aiShow();aiRender();
+}
+function aiFillSoon(){if(aiFT)return;aiFT=setTimeout(function(){aiFT=null;if(aiS.view==="fill")aiRender(true);},150);}
+function aiWeekPrompt(k,names,cuisine){
+  return "Propose "+k+" plats principaux complets et différents pour le quotidien, de saison ("+monthName()+"), inspiration "+cuisine+"."+profileText()+
+    (names.length?" Ne propose pas : "+names.slice(-30).join(", ")+".":"")+
+    " Réponds UNIQUEMENT avec un tableau JSON, sans texte autour ni markdown, pour 4 personnes : "+
+    '[{"nom":"Nom","ingredients":["400 g de pâtes","3 tomates"],"etapes":["Étape courte"]}]. '+
+    "Chaque ingrédient sur une chaîne, la quantité d’abord puis l’ingrédient, unités g, kg, ml, cl ou l. 6 étapes courtes au maximum.";
+}
+function aiFillRun(){
+  var f=aiS.fill;if(!f||!f.free.length){toast("Aucun créneau libre");return;}
+  f.status="run";f.targets=f.free.slice(0,f.n);f.assigned={};f.pending=f.targets.slice();f.done=0;
+  var my=++aiS.rf,names=[],rounds=0;
+  aiRender();
+  function placeMeal(o){
+    var nom=String((o&&o.nom)||"").trim();
+    var ing=(o&&Array.isArray(o.ingredients)?o.ingredients:[]).map(aiLine).filter(Boolean);
+    if(!nom||!ing.length||!f.pending.length)return false;
+    if(names.some(function(n){return n.toLowerCase()===nom.toLowerCase();}))return false;
+    var steps=(o&&Array.isArray(o.etapes)?o.etapes:[]).map(aiLine).map(stripNum).filter(Boolean);
+    var key=f.pending.shift();
+    state.meals[key]={name:nom,ing:ing.join("\n"),steps:steps.map(function(x,i){return (i+1)+". "+x;}).join("\n"),base:4,people:state.people||2};
+    f.assigned[key]=nom;names.push(nom);f.done++;save();
+    return true;
+  }
+  function finish(){f.status="done";if(aiS.view==="fill")aiRender(true);if(tab==="week"||tab==="home")render();}
+  function runRound(){
+    if(!f.pending.length){finish();return;}
+    var left=f.pending.length,chunks=[];
+    for(var i=0;i<left;i+=3)chunks.push(Math.min(3,left-i));
+    var running=chunks.length;
+    chunks.forEach(function(k,ci){
+      var got=0,shown=0;
+      function take(txt){var objs=aiObjs(txt);for(;shown<objs.length;shown++){if(got<k&&placeMeal(objs[shown]))got++;}}
+      aiStream(aiWeekPrompt(k,names,CUISINES[(rounds*3+ci+Math.floor(Math.random()*CUISINES.length))%CUISINES.length]),function(txt){
+        if(my!==aiS.rf)return;take(txt);aiFillSoon();
+      },aiS.fctls).then(function(txt){
+        if(my!==aiS.rf)return;take(txt);
+      }).catch(function(){}).then(function(){
+        if(my!==aiS.rf)return;
+        running--;
+        if(running===0){rounds++;if(f.pending.length&&rounds<2)runRound();else finish();}
+      });
+    });
+  }
+  runRound();
+}
+
+/* ---------- rendu du panneau ---------- */
 function aiRec(box,r,onpick){
   var b=el("button","rec");b.type="button";
   b.appendChild(el("strong","",r.nom));
@@ -1353,31 +1382,47 @@ function aiGrouped(box,items,onpick){
     xs.forEach(function(r){aiRec(box,r,function(){onpick(r);});});
   });
 }
-
 function aiRender(keep){
   var st=keep?aiPanel.scrollTop:0;
   aiPanel.replaceChildren();
-  if(aiS.view==="meal")aiRenderMeal();
+  var v=aiS.view;
+  if(v==="meal")aiRenderMeal();
+  else if(v==="profile")aiRenderProfile();
+  else if(v==="sync")aiRenderSync();
+  else if(v==="fill")aiRenderFill();
   else if(aiS.inDetail)aiRenderDetail();
-  else if(aiS.view==="fav")aiRenderFav();
+  else if(v==="fav")aiRenderFav();
   else aiRenderSearch();
   aiRenderFoot();
   aiPanel.scrollTop=st;
 }
-
 function aiRenderFoot(){
   aiFoot.replaceChildren();
   function btn(t,cls,fn){var b=el("button","btn"+(cls?" "+cls:""),t);b.type="button";b.addEventListener("click",fn);aiFoot.appendChild(b);}
-  if(aiS.view==="meal"){
+  var v=aiS.view;
+  if(v==="meal"){
     btn("Fermer","",aiClose);btn("Modifier","main",aiEditMeal);
+  }else if(v==="profile"){
+    btn("Terminé","main",function(){
+      if(aiS.from==="search"){aiS.view="search";aiRender();}
+      else{aiClose();render();}
+    });
+  }else if(v==="sync"){
+    btn("Fermer","",aiClose);
+  }else if(v==="fill"){
+    var f=aiS.fill;
+    if(f&&f.status==="setup"){btn("Fermer","",aiClose);btn("Composer","main",aiFillRun);}
+    else if(f&&f.status==="run"){btn("Arrêter","",aiClose);}
+    else{btn("Fermer","",aiClose);btn("Voir ma semaine","main",function(){aiClose();go("week");});}
   }else if(aiS.inDetail){
     btn("‹ Retour","",aiBack);
     var d=aiS.detail;
     if(d&&!d.partial&&!aiS.dLoading&&!aiS.err){
-      if(aiS.ctx==="sheet")btn("Utiliser cette recette","main",aiUse);
-      else btn("Ajouter au menu","main",function(){if(aiDaySel&&aiSlotSel)aiAddToMenu(+aiDaySel.value,aiSlotSel.value);});
+      if(aiS.ctx==="sheet"&&v!=="fav")btn("Utiliser cette recette","main",aiUse);
+      else if(aiS.ctx==="sheet")btn("Utiliser cette recette","main",aiUse);
+      else btn("Ajouter à ma semaine","main",function(){if(aiDaySel&&aiSlotSel)aiAddToMenu(+aiDaySel.value,aiSlotSel.value);});
     }
-  }else if(aiS.view==="fav"){
+  }else if(v==="fav"){
     btn("‹ Retour","",function(){aiS.view="search";aiRender();});btn("Fermer","",aiClose);
   }else{
     btn("Fermer","",aiClose);
@@ -1391,7 +1436,10 @@ function aiRenderMeal(){
   if(!m){aiClose();return;}
   aiPanel.appendChild(el("h3","",m.name||"Repas"));
   var f=(m.people&&m.base)?m.people/m.base:1;
-  aiPanel.appendChild(el("p","hint",keyTitle(aiS.mealKey)+(m.people?" · pour "+m.people+" personnes":"")));
+  var tags=el("div","tags");
+  tags.appendChild(el("span","tag",keyTitle(aiS.mealKey)));
+  if(m.people)tags.appendChild(el("span","tag",m.people+" personne"+(m.people>1?"s":"")));
+  aiPanel.appendChild(tags);
   var ings=(m.ing||"").split("\n").filter(function(l){return l.trim();});
   if(ings.length){
     aiPanel.appendChild(el("h2","aisle","Ingrédients"));
@@ -1413,46 +1461,53 @@ function aiRenderDetail(){
   }
   var d=aiS.detail;
   aiPanel.appendChild(el("h3","",d.nom));
-  aiPanel.appendChild(el("p","hint",(d.cat||"Plat")+" · pour "+d.personnes+" personnes"));
+  var tags=el("div","tags");
+  tags.appendChild(el("span","tag",d.cat||"Plat"));
+  tags.appendChild(el("span","tag",d.personnes+" portion"+(d.personnes>1?"s":"")));
+  tags.appendChild(el("span","tag","✨ IA"));
+  aiPanel.appendChild(tags);
   if(!d.partial){
-    var fv=el("button","btn",isFav(d.nom)?"★ Retirer des favoris":"☆ Ajouter aux favoris");fv.type="button";fv.style.width="100%";
+    var fv=el("button","btn",isFav(d.nom)?"★ Retirer de mes recettes":"☆ Ajouter à mes recettes");fv.type="button";fv.style.width="100%";
     fv.addEventListener("click",function(){toggleFav(d);});aiPanel.appendChild(fv);
+  }
+  aiDaySel=aiSlotSel=null;
+  if(!d.partial&&aiS.ctx==="ideas"){
+    aiPanel.appendChild(el("h2","aisle","Quand la cuisiner ?"));
+    var fr=nextFree({}),row=el("div","assign");
+    aiDaySel=sel("",DAYS.map(function(x,i){return [i,x];}),fr.day,"Jour",function(){});
+    aiSlotSel=sel("",SLOTS,fr.slot,"Repas",function(){});
+    row.appendChild(aiDaySel);row.appendChild(aiSlotSel);aiPanel.appendChild(row);
   }
   aiPanel.appendChild(el("h2","aisle","Ingrédients"));
   d.ing.forEach(function(x){aiPanel.appendChild(el("div","ingl",x));});
   aiPanel.appendChild(el("h2","aisle","Étapes"));
   if(d.partial&&!d.steps.length)aiPanel.appendChild(el("p","hint","Rédaction des étapes…"));
   else{var ol=el("ol","steps");d.steps.forEach(function(x){ol.appendChild(el("li","",x));});aiPanel.appendChild(ol);}
-  aiDaySel=aiSlotSel=null;
-  if(!d.partial&&aiS.ctx==="ideas"){
-    var fr=nextFree({}),row=el("div","assign");
-    aiDaySel=sel("",DAYS.map(function(x,i){return [i,x];}),fr.day,"Jour",function(){});
-    aiSlotSel=sel("",SLOTS,fr.slot,"Repas",function(){});
-    row.appendChild(aiDaySel);row.appendChild(aiSlotSel);aiPanel.appendChild(row);
-  }
 }
 
 function aiRenderFav(){
-  aiPanel.appendChild(el("h3","","Mes favoris"));
-  if(!state.favs.length){aiPanel.appendChild(el("p","note","Aucun favori pour l’instant. Ouvre une recette et touche « Ajouter aux favoris »."));return;}
+  aiPanel.appendChild(el("h3","","Mes recettes"));
+  if(!state.favs.length){aiPanel.appendChild(el("p","note","Aucune recette enregistrée pour l’instant. Ouvre une recette et touche « Ajouter à mes recettes »."));return;}
   aiGrouped(aiPanel,state.favs,function(r){aiS.inDetail=true;aiS.err="";aiS.dLoading=false;aiS.detail=r;aiRender();});
 }
 
 function aiRenderSearch(){
-  aiPanel.appendChild(el("h3","","AI Hub · recettes"));
+  aiPanel.appendChild(el("h3","","Recettes AI Hub"));
   var lab=el("label","","Plat ou ingrédients");lab.htmlFor="ai-q";lab.style.marginTop="0";
-  var inp=document.createElement("input");inp.type="text";inp.id="ai-q";inp.value=aiS.q;inp.placeholder="Ex. : poulet, riz, courgette";inp.autocomplete="off";
+  var inp=document.createElement("input");inp.type="text";inp.id="ai-q";inp.value=aiS.q;inp.placeholder="Laisse vide pour une surprise";inp.autocomplete="off";
   inp.addEventListener("input",function(){aiS.q=inp.value;});
   inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();aiSearch(false);}});
   aiPanel.appendChild(lab);aiPanel.appendChild(inp);
   var bar=el("div","bar");bar.style.marginTop="10px";
   var go1=el("button","btn main","Chercher");go1.type="button";go1.addEventListener("click",function(){aiSearch(false);});
-  var fv=el("button","btn","★ Favoris ("+state.favs.length+")");fv.type="button";fv.addEventListener("click",function(){aiS.view="fav";aiRender();});
+  var fv=el("button","btn","★ Mes recettes ("+state.favs.length+")");fv.type="button";fv.addEventListener("click",function(){aiS.view="fav";aiRender();});
   bar.appendChild(go1);bar.appendChild(fv);aiPanel.appendChild(bar);
+  var pf=el("button","chip","⚙️ Préférences : "+(profileText()?"actives":"aucune"));pf.type="button";
+  pf.addEventListener("click",function(){openProfileSheet("search");});
+  aiPanel.appendChild(pf);
   var box=el("div","");box.id="ai-results";aiPanel.appendChild(box);
   aiRenderResults();
 }
-
 function aiRenderResults(){
   var box=document.getElementById("ai-results");if(!box)return;
   box.replaceChildren();
@@ -1474,32 +1529,151 @@ function aiRenderResults(){
     rb.addEventListener("click",function(){aiSearch(false,bad);});box.appendChild(rb);
   }
 }
+
+function aiRenderFill(){
+  var f=aiS.fill;
+  aiPanel.appendChild(el("h3","","Composer ma semaine"));
+  if(f.status==="setup"){
+    aiPanel.appendChild(el("p","hint",f.free.length+" créneau"+(f.free.length>1?"x":"")+" libre"+(f.free.length>1?"s":"")+" (midi et soir). Les repas déjà prévus ne sont pas touchés."));
+    aiPanel.appendChild(el("label","","Combien de repas générer ?"));
+    var opts=[];for(var i=1;i<=Math.min(f.free.length,14);i++)opts.push([i,i+" repas"]);
+    aiPanel.appendChild(sel("",opts,f.n,"Nombre de repas",function(v){f.n=+v;}));
+    aiPanel.appendChild(el("p","hint",profileText()?"Tes préférences (matériel, envies, aliments à éviter) sont prises en compte.":"Astuce : renseigne ton profil gourmand pour des recettes sur mesure."));
+    var pf=el("button","chip","⚙️ Mon profil gourmand");pf.type="button";pf.style.marginTop="10px";
+    pf.addEventListener("click",function(){openProfileSheet("fill");});aiPanel.appendChild(pf);
+    return;
+  }
+  aiPanel.appendChild(el("p","hint",f.status==="done"
+    ?f.done+" repas ajouté"+(f.done>1?"s":"")+(f.done<f.targets.length?" sur "+f.targets.length:"")+" à ta semaine."
+    :"Génération en cours… "+f.done+"/"+f.targets.length));
+  f.targets.forEach(function(k){
+    var row=el("div","ingl");row.style.display="flex";row.style.justifyContent="space-between";row.style.gap="12px";
+    var l=el("span","",keyTitle(k));l.style.color="var(--mute)";row.appendChild(l);
+    var nm=f.assigned[k];
+    var s=el("b","",nm||(f.status==="done"?"— non généré":"…"));s.style.textAlign="right";row.appendChild(s);
+    aiPanel.appendChild(row);
+  });
+}
+
+function aiRenderProfile(){
+  aiPanel.appendChild(el("h3","","Mon profil gourmand"));
+  aiPanel.appendChild(el("p","hint","Ces préférences guident l’IA quand elle propose des recettes."));
+  aiPanel.appendChild(el("h2","aisle","Personnes à table"));
+  var st=el("div","stepper");
+  var minus=el("button","","−");minus.type="button";minus.setAttribute("aria-label","Moins");
+  var val=el("b","",String(state.people));
+  var plus=el("button","","+");plus.type="button";plus.setAttribute("aria-label","Plus");
+  function setP(n){state.people=Math.max(1,Math.min(12,n));val.textContent=String(state.people);save();}
+  minus.addEventListener("click",function(){setP(state.people-1);});
+  plus.addEventListener("click",function(){setP(state.people+1);});
+  st.appendChild(minus);st.appendChild(val);st.appendChild(plus);aiPanel.appendChild(st);
+
+  function chipSet(title,items,arr){
+    aiPanel.appendChild(el("h2","aisle",title));
+    var box=el("div","chips");
+    items.forEach(function(it){
+      var c=el("button","chip",it[1]);c.type="button";
+      function paint(){c.setAttribute("aria-pressed",String(arr().indexOf(it[0])>-1));}
+      paint();
+      c.addEventListener("click",function(){toggleIn(arr(),it[0]);save();paint();});
+      box.appendChild(c);
+    });
+    aiPanel.appendChild(box);
+  }
+  chipSet("Mon matériel",APPLIANCES.map(function(a){return [a.id,a.label];}),function(){return state.appliances;});
+  chipSet("Mes envies",WISHES,function(){return state.profile.wishes;});
+
+  aiPanel.appendChild(el("h2","aisle","Ce que j’évite"));
+  var av=el("div","chips");av.style.marginBottom="10px";
+  function drawAvoid(){
+    av.replaceChildren();
+    state.profile.avoid.forEach(function(t,i){
+      var c=el("button","chip",t);c.type="button";c.appendChild(el("span","x","×"));
+      c.addEventListener("click",function(){state.profile.avoid.splice(i,1);save();drawAvoid();});
+      av.appendChild(c);
+    });
+    av.hidden=!state.profile.avoid.length;
+  }
+  drawAvoid();aiPanel.appendChild(av);
+  var row=el("div","addrow");
+  var inp=document.createElement("input");inp.type="text";inp.placeholder="Ex. : coriandre, abats";inp.autocomplete="off";
+  var add=el("button","btn main","+");add.type="button";add.setAttribute("aria-label","Ajouter");
+  function addAvoid(){
+    inp.value.split(/[,;]+/).forEach(function(x){x=x.trim();if(x&&state.profile.avoid.indexOf(x)<0&&state.profile.avoid.length<20)state.profile.avoid.push(x);});
+    inp.value="";save();drawAvoid();
+  }
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addAvoid();}});
+  add.addEventListener("click",addAvoid);
+  row.appendChild(inp);row.appendChild(add);aiPanel.appendChild(row);
+}
+
+function aiRenderSync(){
+  aiPanel.appendChild(el("h3","","Synchronisation"));
+  if(familyCode){
+    aiPanel.appendChild(el("p","hint","Les téléphones connectés partagent le même menu."));
+    aiPanel.appendChild(el("p","","Code famille :"));
+    var codeBox=el("div","");
+    codeBox.style.cssText="font:800 30px 'Fraunces',Georgia,serif;letter-spacing:5px;text-align:center;padding:16px;background:var(--bg);border-radius:16px;margin:8px 0 16px";
+    codeBox.textContent=familyCode;
+    aiPanel.appendChild(codeBox);
+    var copyBtn=el("button","btn main","Copier le code");copyBtn.type="button";copyBtn.style.width="100%";
+    copyBtn.addEventListener("click",function(){
+      navigator.clipboard.writeText(familyCode).then(function(){toast("Code copié");}).catch(function(){toast("Copie impossible");});
+    });
+    aiPanel.appendChild(copyBtn);
+    var leaveBtn=el("button","btn warn","Quitter ce partage");leaveBtn.type="button";leaveBtn.style.width="100%";leaveBtn.style.marginTop="10px";
+    leaveBtn.addEventListener("click",function(){
+      if(confirm("Arrêter la synchronisation sur cet appareil ?")){leaveFamily();aiClose();}
+    });
+    aiPanel.appendChild(leaveBtn);
+  }else{
+    aiPanel.appendChild(el("p","hint","Crée un code pour partager le menu avec un autre téléphone, ou rejoins un code existant."));
+    var createBtn=el("button","btn main","Créer un nouveau code famille");createBtn.type="button";createBtn.style.width="100%";createBtn.style.margin="12px 0 16px";
+    createBtn.addEventListener("click",function(){
+      var code=generateFamilyCode();
+      startSync(code);
+      setTimeout(function(){if(aiS.view==="sync")aiRender();},300);
+      setTimeout(function(){if(aiS.view==="sync")aiRender();},1900);
+    });
+    aiPanel.appendChild(createBtn);
+    aiPanel.appendChild(el("label","","Rejoindre avec un code"));
+    var inp=document.createElement("input");inp.type="text";inp.id="sync-code";inp.placeholder="Ex. : A7K9P2";inp.style.textTransform="uppercase";inp.maxLength=6;
+    aiPanel.appendChild(inp);
+    var joinBtn=el("button","btn main","Rejoindre");joinBtn.type="button";joinBtn.style.width="100%";joinBtn.style.marginTop="10px";
+    joinBtn.addEventListener("click",function(){
+      var code=(inp.value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
+      if(code.length<4){toast("Code trop court");return;}
+      startSync(code);toast("Connexion au code "+code+"…");aiClose();render();
+    });
+    aiPanel.appendChild(joinBtn);
+  }
+}
+
 document.getElementById("f-ai").addEventListener("click",function(){
   aiOpen("sheet",document.getElementById("f-name").value.trim());
 });
 
 /* --- Web Share Target --- */
-function checkSharedTarget() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('share') === 'true') {
-    let sharedUrl = params.get('url') || params.get('text') || '';
-    const match = sharedUrl.match(/https?:\/\/[^\s]+/);
-    if (match) sharedUrl = match[0];
-
-    if (sharedUrl && sharedUrl.includes('marmiton.org')) {
+function checkSharedTarget(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get("share")==="true"){
+    var sharedUrl=params.get("url")||params.get("text")||"";
+    var match=sharedUrl.match(/https?:\/\/[^\s]+/);
+    if(match)sharedUrl=match[0];
+    if(sharedUrl&&sharedUrl.includes("marmiton.org")){
       go("week");
-      setTimeout(() => {
-        openSheet("0-m", "Lundi, midi");
-        document.getElementById("f-url").value = sharedUrl;
+      setTimeout(function(){
+        openSheet("0-m","Lundi, midi");
+        document.getElementById("f-url").value=sharedUrl;
         document.getElementById("f-import").click();
-      }, 100);
+      },100);
     }
   }
 }
 
 /* PWA léger */
 if("serviceWorker" in navigator){
-  var sw=`self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});self.addEventListener('fetch',e=>{e.respondWith(caches.open('menu-v2').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(e.request.method==='GET'&&res.ok)c.put(e.request,res.clone());return res}).catch(()=>caches.match('./'))))})`;
+  var sw="self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});self.addEventListener('fetch',e=>{e.respondWith(caches.open('menu-v2').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(e.request.method==='GET'&&res.ok)c.put(e.request,res.clone());return res}).catch(()=>caches.match('./'))))})";
   var blob=new Blob([sw],{type:"text/javascript"});
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
 }
@@ -1507,7 +1681,7 @@ if("serviceWorker" in navigator){
 /* --- Restauration du brouillon au lancement --- */
 try{
   var dr=JSON.parse(localStorage.getItem(DKEY)||"null");
-  if(dr&&dr.key){
+  if(dr&&dr.key&&!/-p$/.test(dr.key)){
     openSheet(dr.key,dr.title);
     document.getElementById("f-name").value=dr.name;
     document.getElementById("f-url").value=dr.url;
@@ -1519,7 +1693,7 @@ try{
 }catch(e){}
 
 route();
-setTimeout(checkSharedTarget, 100);
+setTimeout(checkSharedTarget,100);
 </script>
 </body>
 </html>
