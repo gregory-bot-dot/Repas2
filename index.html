@@ -204,6 +204,14 @@ textarea{min-height:130px;resize:vertical}
     </div>
 
     <div class="bar" style="margin:8px 0 0"><button type="button" class="btn" id="f-import">Importer les ingrédients</button></div>
+
+    <!-- Mode reste + favoris -->
+    <div class="bar" style="margin:12px 0 4px; gap:8px; flex-wrap:wrap">
+      <button type="button" class="chip" id="f-leftover" aria-pressed="false">♻️ C’est un reste</button>
+      <button type="button" class="chip" id="f-fav" aria-pressed="false">☆ Favori</button>
+    </div>
+    <p class="hint" id="f-leftover-hint" hidden>Les ingrédients de ce repas ne seront <strong>pas</strong> ajoutés à la liste de courses.</p>
+
     <label for="f-ing">Ingrédients (un par ligne)</label>
     <textarea id="f-ing" placeholder="400 g de pâtes&#10;3 tomates&#10;1 oignon"></textarea>
     <label for="f-steps">Étapes (facultatif)</label>
@@ -219,6 +227,7 @@ textarea{min-height:130px;resize:vertical}
       <button type="button" class="btn" id="f-cancel">Fermer</button>
       <button type="submit" class="btn main">Enregistrer</button>
     </div>
+
   </form>
 </div>
 <div id="aisheet" aria-hidden="true"><div class="panel"><div class="grab"></div><div id="ai-panel" class="sh-body"></div><div id="ai-foot" class="acts sh-foot" hidden></div></div></div>
@@ -410,19 +419,27 @@ function slotRow(i,s,label){
   b.appendChild(el("span","ico2",SLOT_ICO[s[0]]||"🍽"));
   var tx=el("span","txt");
   tx.appendChild(el("span","when",s[1]));
-  tx.appendChild(el("span","what"+(has?"":" empty"),has?m.name:"Ajouter un repas"));
-  if(has&&ingCount(m))tx.appendChild(el("small","",ingCount(m)+" ingrédient"+(ingCount(m)>1?"s":"")+(m.people?" · "+m.people+" pers.":"")));
+  var title=has?(m.leftover?"♻️ "+m.name:m.name):"Ajouter un repas";
+  tx.appendChild(el("span","what"+(has?"":" empty"),title));
+  if(has){
+    var bits=[];
+    if(m.leftover)bits.push("reste · hors courses");
+    else if(ingCount(m))bits.push(ingCount(m)+" ingrédient"+(ingCount(m)>1?"s":""));
+    if(m.people)bits.push(m.people+" pers.");
+    if(bits.length)tx.appendChild(el("small","",bits.join(" · ")));
+  }
   b.appendChild(tx);
   b.appendChild(el("span","go",has?"›":"+"));
   b.addEventListener("click",function(){openSheet(key,label+", "+s[1].toLowerCase());});
   var wrap=el("div","slotwrap");wrap.appendChild(b);
-  if(has&&(ingCount(m)||(m.steps&&m.steps.trim()))){
+  if(has&&!m.leftover&&(ingCount(m)||(m.steps&&m.steps.trim()))){
     var rb=el("button","recbtn","Recette");rb.type="button";
     rb.addEventListener("click",function(){aiOpenMeal(key);});
     wrap.appendChild(rb);
   }
   return wrap;
 }
+
 function daySection(i){
   var t=todayIdx();
   var card=el("section","day"+(i===t?" today":"")+(i<t?" past":""));
@@ -459,7 +476,9 @@ function toNum(x){var F={"½":.5,"¼":.25,"¾":.75};if(F[x])return F[x];if(x.ind
 function buildList(){
   var map={};
   Object.keys(state.meals).forEach(function(k){
-    var m=state.meals[k];if(!m||!m.ing)return;var f=(m.people&&m.base)?m.people/m.base:1;
+    var m=state.meals[k];
+    if(!m||!m.ing||m.leftover)return; /* les restes n’entrent pas dans la liste de courses */
+    var f=(m.people&&m.base)?m.people/m.base:1;
     m.ing.split("\n").forEach(function(line){
       line=line.trim();if(!line)return;
       var q=null,u="",n=line,r=RX.exec(line);
@@ -472,6 +491,7 @@ function buildList(){
   });
   return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return a.name.localeCompare(b.name,"fr");});
 }
+
 function fmt(it){
   var q=it.qty,u=it.unit;if(!q)return it.name;if(!u)q=Math.ceil(q-1e-9);
   if(u==="g"&&q>=1000){q=q/1000;u="kg";}
@@ -542,8 +562,8 @@ function mealEntries(){
   return out;
 }
 function renderListMeals(){
-  var ents=mealEntries();
-  if(!ents.length){view.appendChild(el("p","note","Aucun repas planifié."));return;}
+  var ents=mealEntries().filter(function(e){return !e.m.leftover;}); /* restes exclus des courses */
+  if(!ents.length){view.appendChild(el("p","note","Aucun repas avec ingrédients à acheter (les restes sont exclus)."));return;}
   ents.forEach(function(e){
     var m=e.m,f=(m.people&&m.base)?m.people/m.base:1;
     var lines=(m.ing||"").split("\n").map(function(l){return l.trim();}).filter(Boolean).map(function(l){
@@ -575,6 +595,7 @@ function renderListMeals(){
     card.appendChild(body);view.appendChild(card);
   });
 }
+
 function renderList(){
   view.replaceChildren();
   var S=listStats(),items=S.items;
@@ -622,6 +643,19 @@ var tt;function toast(t){
 
 /* ---------- fiche repas ---------- */
 var sheet=document.getElementById("sheet");
+function setLeftoverUI(on){
+  var btn=document.getElementById("f-leftover");
+  var hint=document.getElementById("f-leftover-hint");
+  if(btn)btn.setAttribute("aria-pressed",String(!!on));
+  if(hint)hint.hidden=!on;
+}
+function setFavUI(on){
+  var btn=document.getElementById("f-fav");
+  if(btn){
+    btn.setAttribute("aria-pressed",String(!!on));
+    btn.textContent=on?"★ Favori":"☆ Favori";
+  }
+}
 function openSheet(key,title){
   editKey=key;var m=state.meals[key]||{name:"",ing:""};
   document.getElementById("sh-title").textContent=title;
@@ -632,6 +666,8 @@ function openSheet(key,title){
   var pp=m.people||state.people||2;
   document.getElementById("f-ppl").value=pp;
   document.getElementById("f-base").value=m.base||pp;
+  setLeftoverUI(!!m.leftover);
+  setFavUI(m.name?isFav(m.name):false);
   sheet.classList.add("open");sheet.setAttribute("aria-hidden","false");
   if(!m.name)setTimeout(function(){document.getElementById("f-name").focus();},50);
 }
@@ -644,8 +680,13 @@ document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
   var name=document.getElementById("f-name").value.trim(),ing=document.getElementById("f-ing").value,steps=document.getElementById("f-steps").value;
   var ppl=Math.max(1,parseInt(document.getElementById("f-ppl").value,10)||2),base=Math.max(1,parseInt(document.getElementById("f-base").value,10)||ppl);
+  var leftover=document.getElementById("f-leftover").getAttribute("aria-pressed")==="true";
   state.people=ppl;
-  if(name||ing.trim())state.meals[editKey]={name:name,ing:ing,steps:steps,base:base,people:ppl};else delete state.meals[editKey];
+  if(name||ing.trim()){
+    var meal={name:name,ing:ing,steps:steps,base:base,people:ppl};
+    if(leftover)meal.leftover=true;
+    state.meals[editKey]=meal;
+  }else delete state.meals[editKey];
   save();closeSheet();render();
 });
 document.getElementById("f-cancel").addEventListener("click",closeSheet);
@@ -653,7 +694,24 @@ document.getElementById("f-clear").addEventListener("click",function(){
   if(!state.meals[editKey]){closeSheet();return;}
   if(confirm("Vider ce repas ?")){delete state.meals[editKey];save();closeSheet();render();}
 });
+document.getElementById("f-leftover").addEventListener("click",function(){
+  var on=this.getAttribute("aria-pressed")!=="true";
+  setLeftoverUI(on);
+  if(on)toast("Reste activé · hors liste de courses");
+});
+document.getElementById("f-fav").addEventListener("click",function(){
+  var name=document.getElementById("f-name").value.trim();
+  if(!name){toast("Donne d’abord un nom au repas");return;}
+  var ing=document.getElementById("f-ing").value.split("\n").map(function(l){return l.trim();}).filter(Boolean);
+  var steps=document.getElementById("f-steps").value.split("\n").map(function(l){return l.trim();}).filter(Boolean);
+  var ppl=Math.max(1,parseInt(document.getElementById("f-ppl").value,10)||state.people||2);
+  var d={nom:name,cat:catOfName(name),personnes:ppl,ing:ing,steps:steps};
+  toggleFav(d);
+  setFavUI(isFav(name));
+  toast(isFav(name)?"Ajouté aux favoris":"Retiré des favoris");
+});
 /* La fenêtre ne se ferme plus en touchant la zone sombre : seulement via Fermer / Enregistrer */
+
 
 function decode(t){var n=document.createElement("textarea");n.innerHTML=t;return n.value;}
 document.getElementById("f-search").addEventListener("click",function(){
@@ -1114,7 +1172,14 @@ function aiStream(prompt,onText,bucket){
   return fetch(AI_PROXY,{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({mode:AI_MODE,messages:[{role:"user",content:prompt}],stream:true}),signal:ctl.signal})
   .then(function(r){
-    if(!r.ok)return r.text().then(function(x){throw new Error("HTTP "+r.status+" "+x.slice(0,120));});
+    if(!r.ok)return r.text().then(function(x){
+      var msg="Erreur AI ("+r.status+")";
+      if(r.status===401||r.status===403)msg="AI Hub : connexion requise (auth manquante sur le proxy)";
+      else if(r.status===429)msg="AI Hub : trop de requêtes, réessaie dans un moment";
+      else if(r.status>=500)msg="AI Hub momentanément indisponible";
+      else{try{var j=JSON.parse(x);if(j.error)msg=String(j.error).slice(0,120);}catch(e){}}
+      throw new Error(msg);
+    });
     var acc="",raw="",buf="";
     function eat(line){
       var l=line.trim();if(l.indexOf("data:")!==0)return;
@@ -1129,6 +1194,7 @@ function aiStream(prompt,onText,bucket){
     if(!r.body||!r.body.getReader)return r.text().then(function(x){raw=x;x.split("\n").forEach(eat);return fin();});
     var rd=r.body.getReader(),dec=new TextDecoder();
     function pump(){
+
       return rd.read().then(function(res){
         if(res.done){if(buf)eat(buf);return fin();}
         var chunk=dec.decode(res.value,{stream:true});raw+=chunk;buf+=chunk;
@@ -1137,8 +1203,15 @@ function aiStream(prompt,onText,bucket){
       });
     }
     return pump();
-  }).then(function(x){done();return x;},function(e){done();throw new Error(e&&e.name==="AbortError"?"Délai dépassé":(e&&e.message)||"Réseau");});
+  }).then(function(x){done();return x;},function(e){
+    done();
+    var msg=(e&&e.message)||"Réseau";
+    if(e&&e.name==="AbortError")msg="Délai dépassé";
+    else if(/Failed to fetch|Load failed|NetworkError|network/i.test(msg))msg="Connexion AI impossible (réseau ou proxy)";
+    throw new Error(msg);
+  });
 }
+
 function aiClean(text){return String(text).replace(/<think>[\s\S]*?(?:<\/think>|$)/gi,"").replace(/```json|```/gi,"");}
 /* objets { } complets d'un tableau JSON en cours d'arrivée */
 function aiObjs(text){
@@ -1472,17 +1545,33 @@ function aiRenderMeal(){
   var tags=el("div","tags");
   tags.appendChild(el("span","tag",keyTitle(aiS.mealKey)));
   if(m.people)tags.appendChild(el("span","tag",m.people+" personne"+(m.people>1?"s":"")));
+  if(m.leftover)tags.appendChild(el("span","tag","♻️ Reste · hors courses"));
   aiPanel.appendChild(tags);
+  if(m.name){
+    var fv=el("button","btn",isFav(m.name)?"★ Retirer des favoris":"☆ Ajouter aux favoris");
+    fv.type="button";fv.style.width="100%";fv.style.marginBottom="10px";
+    fv.addEventListener("click",function(){
+      var ing=(m.ing||"").split("\n").map(function(l){return l.trim();}).filter(Boolean);
+      var steps=(m.steps||"").split("\n").map(function(l){return l.trim();}).filter(Boolean);
+      toggleFav({nom:m.name,cat:catOfName(m.name),personnes:m.people||state.people||2,ing:ing,steps:steps});
+      aiRender();
+      toast(isFav(m.name)?"Ajouté aux favoris":"Retiré des favoris");
+    });
+    aiPanel.appendChild(fv);
+  }
   var ings=(m.ing||"").split("\n").filter(function(l){return l.trim();});
   if(ings.length){
-    aiPanel.appendChild(el("h2","aisle","Ingrédients"));
+    aiPanel.appendChild(el("h2","aisle","Ingrédients"+(m.leftover?" (non comptés dans les courses)":"")));
     ings.forEach(function(l){aiPanel.appendChild(el("div","ingl",scaledLine(l,f)));});
+  }else if(m.leftover){
+    aiPanel.appendChild(el("p","hint","Aucun ingrédient · c’est un reste."));
   }
   aiPanel.appendChild(el("h2","aisle","Étapes"));
   var st=(m.steps||"").split("\n").filter(function(l){return l.trim();});
   if(st.length)st.forEach(function(l){aiPanel.appendChild(el("p","stepl",l.trim()));});
   else aiPanel.appendChild(el("p","hint","Pas d’étapes enregistrées pour ce repas."));
 }
+
 
 function aiRenderDetail(){
   if(aiS.dLoading){aiPanel.appendChild(el("p","note","Je prépare la recette « "+aiS.dName+" »…"));return;}
