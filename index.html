@@ -160,12 +160,15 @@ textarea{min-height:130px;resize:vertical}
 #sheet,#aisheet{position:fixed;inset:0;background:rgba(0,0,0,0);display:flex;align-items:flex-end;z-index:20;pointer-events:none;transition:background .25s;color:var(--ink)}
 #sheet.open,#aisheet.open{background:rgba(0,0,0,.55);pointer-events:auto}
 #aisheet{z-index:25}
-#sheet form,#aisheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--sheet);border-radius:26px 26px 0 0;padding:0;transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-bottom:0}
+#sheet form,#aisheet .panel{width:100%;max-width:560px;margin-inline:auto;background:var(--sheet);border-radius:26px 26px 0 0;padding:0;transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-bottom:0;touch-action:pan-y}
 #sheet form{max-height:92vh;max-height:92dvh}
 #aisheet .panel{height:88vh;height:88dvh;max-height:92vh}
 #sheet.open form,#aisheet.open .panel{transform:translateY(0)}
+#sheet form.dragging,#aisheet .panel.dragging{transition:none}
 #sheet h3,#aisheet h3{margin:0 0 6px;font:800 24px "Plus Jakarta Sans",sans-serif;letter-spacing:-.025em}
-.grab{flex:none;width:44px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 6px}
+.grab{flex:none;width:44px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 6px;cursor:grab}
+.grab-hit{flex:none;padding:8px 0 4px;display:flex;justify-content:center;align-items:center;cursor:grab;touch-action:none}
+
 .sh-body{flex:1;min-height:0;overflow:auto;padding:4px 18px 16px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .sh-foot{flex:none;margin:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--sheet)}
 .sh-foot .btn{min-height:56px;font-size:17px;border-radius:18px}
@@ -190,8 +193,9 @@ textarea{min-height:130px;resize:vertical}
 
 <div id="sheet" aria-hidden="true">
   <form id="form">
-    <div class="grab"></div>
+    <div class="grab-hit" id="sheet-grab"><div class="grab"></div></div>
     <div class="sh-body">
+
     <h3 id="sh-title"></h3>
     <label for="f-name">Repas</label>
     <input type="text" id="f-name" placeholder="Ex. : pâtes à la tomate" autocomplete="off">
@@ -230,7 +234,8 @@ textarea{min-height:130px;resize:vertical}
 
   </form>
 </div>
-<div id="aisheet" aria-hidden="true"><div class="panel"><div class="grab"></div><div id="ai-panel" class="sh-body"></div><div id="ai-foot" class="acts sh-foot" hidden></div></div></div>
+<div id="aisheet" aria-hidden="true"><div class="panel" id="ai-panel-wrap"><div class="grab-hit" id="ai-grab"><div class="grab"></div></div><div id="ai-panel" class="sh-body"></div><div id="ai-foot" class="acts sh-foot" hidden></div></div></div>
+
 <div id="toast" role="status"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -672,10 +677,60 @@ function openSheet(key,title){
   if(!m.name)setTimeout(function(){document.getElementById("f-name").focus();},50);
 }
 function closeSheet(){
+  var form=sheet.querySelector("form");
+  if(form){form.style.transform="";form.classList.remove("dragging");}
+  sheet.style.background="";
   sheet.classList.remove("open");sheet.setAttribute("aria-hidden","true");
   try{localStorage.removeItem(DKEY);}catch(e){}
   editKey=null;
 }
+
+/* Swipe vers le bas pour fermer une feuille (comme iOS) */
+function enableSheetSwipe(overlay, panel, onClose){
+  var startY=0, currentY=0, dragging=false, startT=0;
+  function yOf(e){return e.touches?e.touches[0].clientY:e.clientY;}
+  function onStart(e){
+    if(!overlay.classList.contains("open"))return;
+    startY=yOf(e);currentY=startY;startT=Date.now();dragging=true;
+    panel.classList.add("dragging");
+  }
+  function onMove(e){
+    if(!dragging)return;
+    currentY=yOf(e);
+    var dy=Math.max(0,currentY-startY);
+    panel.style.transform="translateY("+dy+"px)";
+    var op=Math.max(0.15,0.55-dy/800);
+    overlay.style.background="rgba(0,0,0,"+op+")";
+    if(dy>8&&e.cancelable)e.preventDefault();
+  }
+  function onEnd(){
+    if(!dragging)return;
+    dragging=false;
+    panel.classList.remove("dragging");
+    var dy=Math.max(0,currentY-startY);
+    var dt=Math.max(1,Date.now()-startT);
+    var velocity=dy/dt;
+    if(dy>110||(dy>50&&velocity>0.45)){
+      panel.style.transform="";
+      overlay.style.background="";
+      onClose();
+    }else{
+      panel.style.transform="";
+      overlay.style.background="";
+    }
+  }
+  var hit=panel.querySelector(".grab-hit")||panel;
+  hit.addEventListener("touchstart",onStart,{passive:true});
+  hit.addEventListener("touchmove",onMove,{passive:false});
+  hit.addEventListener("touchend",onEnd);
+  hit.addEventListener("touchcancel",onEnd);
+  // Clic sur le fond sombre ferme aussi
+  overlay.addEventListener("click",function(e){
+    if(e.target===overlay)onClose();
+  });
+}
+enableSheetSwipe(sheet,sheet.querySelector("form"),closeSheet);
+
 document.getElementById("form").addEventListener("submit",function(e){
   e.preventDefault();
   var name=document.getElementById("f-name").value.trim(),ing=document.getElementById("f-ing").value,steps=document.getElementById("f-steps").value;
@@ -1305,8 +1360,13 @@ function openAppliancesSheet(){openProfileSheet("close");}
 function openSyncSheet(){aiS.view="sync";aiS.inDetail=false;aiShow();aiRender();}
 function aiClose(){
   aiAbortAll();
+  var panel=document.getElementById("ai-panel-wrap");
+  if(panel){panel.style.transform="";panel.classList.remove("dragging");}
+  aiSheet.style.background="";
   aiSheet.classList.remove("open");aiSheet.setAttribute("aria-hidden","true");
 }
+enableSheetSwipe(document.getElementById("aisheet"),document.getElementById("ai-panel-wrap"),aiClose);
+
 function aiBack(){aiAbort(aiS.dctls);aiS.rd++;aiS.inDetail=false;aiS.detail=null;aiS.dLoading=false;aiS.err="";aiRender();}
 function aiResultsSoon(){if(aiRT)return;aiRT=setTimeout(function(){aiRT=null;aiRenderResults();},120);}
 
