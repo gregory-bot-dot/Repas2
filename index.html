@@ -1171,20 +1171,36 @@ var aiSheet=document.getElementById("aisheet"),aiPanel=document.getElementById("
 function aiAbort(bucket){bucket.splice(0).forEach(function(c){try{c.abort();}catch(e){}});}
 function aiAbortAll(){aiAbort(aiS.lctls);aiAbort(aiS.dctls);aiAbort(aiS.fctls);aiS.rl++;aiS.rd++;aiS.rf++;aiS.running=0;}
 
+/* Token Firebase pour le proxy AI Hub (Authorization: Bearer …) */
+function getAiToken(){
+  var user=auth.currentUser;
+  if(!user){
+    return auth.signInAnonymously().then(function(cred){return cred.user.getIdToken();});
+  }
+  return user.getIdToken();
+}
+
 /* Appel au proxy en flux : onText reçoit le texte au fur et à mesure */
 function aiStream(prompt,onText,bucket){
   var ctl=new AbortController();bucket.push(ctl);
   var t=setTimeout(function(){ctl.abort();},80000);
   function done(){clearTimeout(t);var i=bucket.indexOf(ctl);if(i>-1)bucket.splice(i,1);}
-  return fetch(AI_PROXY,{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({mode:AI_MODE,messages:[{role:"user",content:prompt}],stream:true}),signal:ctl.signal})
-  .then(function(r){
+  return getAiToken().then(function(token){
+    return fetch(AI_PROXY,{method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer "+token
+      },
+      body:JSON.stringify({mode:AI_MODE,messages:[{role:"user",content:prompt}],stream:true}),
+      signal:ctl.signal});
+  }).then(function(r){
     if(!r.ok)return r.text().then(function(x){
       var msg="Erreur AI ("+r.status+")";
-      if(r.status===401||r.status===403)msg="AI Hub : connexion requise (auth manquante sur le proxy)";
+      if(r.status===401)msg="AI Hub : session Firebase invalide — reconnecte-toi";
+      else if(r.status===403)msg="AI Hub : accès refusé (UID non autorisé ou origine bloquée)";
       else if(r.status===429)msg="AI Hub : trop de requêtes, réessaie dans un moment";
       else if(r.status>=500)msg="AI Hub momentanément indisponible";
-      else{try{var j=JSON.parse(x);if(j.error)msg=String(j.error).slice(0,120);}catch(e){}}
+      else{try{var j=JSON.parse(x);if(j.error)msg=String(j.error).slice(0,140);}catch(e){}}
       throw new Error(msg);
     });
     var acc="",raw="",buf="";
@@ -1201,7 +1217,6 @@ function aiStream(prompt,onText,bucket){
     if(!r.body||!r.body.getReader)return r.text().then(function(x){raw=x;x.split("\n").forEach(eat);return fin();});
     var rd=r.body.getReader(),dec=new TextDecoder();
     function pump(){
-
       return rd.read().then(function(res){
         if(res.done){if(buf)eat(buf);return fin();}
         var chunk=dec.decode(res.value,{stream:true});raw+=chunk;buf+=chunk;
@@ -1214,10 +1229,11 @@ function aiStream(prompt,onText,bucket){
     done();
     var msg=(e&&e.message)||"Réseau";
     if(e&&e.name==="AbortError")msg="Délai dépassé";
-    else if(/Failed to fetch|Load failed|NetworkError|network/i.test(msg))msg="Connexion AI impossible (réseau ou proxy)";
+    else if(/Failed to fetch|Load failed|NetworkError|network/i.test(msg))msg="Connexion AI impossible (CORS, réseau ou proxy)";
     throw new Error(msg);
   });
 }
+
 
 function aiClean(text){return String(text).replace(/<think>[\s\S]*?(?:<\/think>|$)/gi,"").replace(/```json|```/gi,"");}
 /* objets { } complets d'un tableau JSON en cours d'arrivée */
