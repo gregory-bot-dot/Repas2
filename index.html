@@ -966,6 +966,10 @@ function mini(em,title,sub,fn){
   b.addEventListener("click",fn);return b;
 }
 function kv(k,v){var r=el("div","kv");r.appendChild(el("span","",k));r.appendChild(el("span","",v));return r;}
+function openFavs(){
+  aiS.view="fav";aiS.inDetail=false;aiS.ctx="ideas";
+  aiShow();aiRender();
+}
 function renderHome(){
   view.replaceChildren();
   view.appendChild(daySection(todayIdx()));
@@ -977,7 +981,7 @@ function renderHome(){
   view.appendChild(duo);
   var duo2=el("div","duo");
   duo2.appendChild(mini("🎲","Surprends-moi","Idées au hasard",function(){aiOpen("ideas","",true);}));
-  duo2.appendChild(mini("🧊","Mon frigo","Cuisiner mes restes",function(){go("idea");}));
+  duo2.appendChild(mini("★",state.favs.length+" favori"+(state.favs.length>1?"s":""),state.favs.length?"Mes recettes enregistrées":"Aucune recette encore",openFavs));
   view.appendChild(duo2);
 
   var card=el("section","card");
@@ -996,6 +1000,7 @@ function renderHome(){
   view.appendChild(syncBtn);
 }
 
+
 /* ---------- navigation ---------- */
 var TITLES={
   home:["Bonjour",function(){return dateStr();}],
@@ -1011,7 +1016,8 @@ var ICONS={
  idea:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 6a12 12 0 0 0-7 21.8V33h14v-5.2A12 12 0 0 0 24 6z"/><path d="M18 39h12M20 43h8"/></svg>',
  list:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18h36l-4 20a3 3 0 0 1-3 2.5H13a3 3 0 0 1-3-2.5L6 18z"/><path d="M16 18l6-10M32 18l-6-10M19 26v8M29 26v8"/></svg>'
 };
-var NAV=[["home","Accueil"],["week","Repas"],["idea","Idées"],["list","Courses"]];
+var NAV=[["home","Accueil"],["week","Repas"],["list","Courses"]];
+
 function renderNav(){
   nav.replaceChildren();
   NAV.forEach(function(n){
@@ -1046,7 +1052,8 @@ function render(){
   var sub=typeof t[1]==="function"?t[1]():t[1];
   if(sub)h.appendChild(el("span","gold",sub));
   top.appendChild(h);
-  if(tab==="home")renderHome();else if(tab==="week")renderWeek();else if(tab==="idea")renderIdeas();else renderList();
+  if(tab==="home")renderHome();else if(tab==="week")renderWeek();else if(tab==="list")renderList();else{tab="home";renderHome();}
+
   renderNav();
 }
 
